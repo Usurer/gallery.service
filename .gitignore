@@ -398,4 +398,4 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Custom stuff
-/Api/Gallery.db
+/Api/Gallery.db*

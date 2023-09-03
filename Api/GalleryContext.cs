@@ -8,8 +8,7 @@ public class GalleryContext : DbContext
     {
     }
 
-    public GalleryContext(DbContextOptions<GalleryContext> options)
-        : base(options)
+    public GalleryContext(DbContextOptions<GalleryContext> options) : base(options)
     {
     }
 
@@ -27,13 +26,11 @@ public class GalleryContext : DbContext
     {
         modelBuilder.Entity<Image>(entity =>
         {
-            entity.ToTable("images");
+            entity.ToTable("Images");
 
-            entity.Property(e => e.Id)
-                .HasColumnType("INT")
-                .HasColumnName("id");
-            entity.Property(e => e.Path).HasColumnName("path");
-            entity.Property(e => e.PreviewPath).HasColumnName("previewPath");
+            entity.Property(e => e.Id).HasColumnType("INTEGER").IsRequired();
+            entity.Property(e => e.Path);
+            entity.Property(e => e.PreviewPath);
         });
 
         OnModelCreatingPartial(modelBuilder);
