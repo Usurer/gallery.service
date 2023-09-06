@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-
 namespace Api
 {
     public class Program
@@ -16,6 +14,16 @@ namespace Api
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<GalleryContext>();
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(p =>
+                {
+                    p   
+                        .AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
 
             var app = builder.Build();
 
@@ -24,6 +32,8 @@ namespace Api
                 var dbContext = scope.ServiceProvider.GetRequiredService<GalleryContext>();
                 dbContext.Database.EnsureCreated();
             }
+
+            app.UseCors();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
