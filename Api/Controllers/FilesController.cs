@@ -38,11 +38,11 @@ namespace Api.Controllers
             image.Read(bytes);
 
             var imgSize = BitConverter.GetBytes(image.Length);
-            await Response.Body.WriteAsync(imgSize, 0, 4);
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 10; i++)
             {
                 var writer = new StreamWriter(Response.Body);
+                await Response.Body.WriteAsync(imgSize, 0, 4);
                 await Response.Body.WriteAsync(bytes, 0, bytes.Length);
                 await Response.Body.FlushAsync();
 
