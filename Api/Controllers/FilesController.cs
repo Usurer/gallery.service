@@ -32,14 +32,18 @@ namespace Api.Controllers
         [HttpGet()]
         public async Task GetBytes()
         {
-            for (int i = 0; i < 10; i++)
-            {
-                byte[] helloBytes = Encoding.ASCII.GetBytes("Hello");
-                //await Response.BodyWriter.WriteAsync(helloBytes);
-                //await Response.BodyWriter.FlushAsync().ConfigureAwait(false);
+            using var image = new FileStream("C:\\Users\\Usurer.000\\Pictures\\DSC06344.JPG", FileMode.Open);
+            var bytes = new byte[image.Length];
 
+            image.Read(bytes);
+
+            var imgSize = BitConverter.GetBytes(image.Length);
+            await Response.Body.WriteAsync(imgSize, 0, 4);
+
+            for (int i = 0; i < 1; i++)
+            {
                 var writer = new StreamWriter(Response.Body);
-                await Response.Body.WriteAsync(helloBytes, 0, helloBytes.Length);
+                await Response.Body.WriteAsync(bytes, 0, bytes.Length);
                 await Response.Body.FlushAsync();
 
                 await Task.Delay(1000 * 1);

@@ -8,17 +8,65 @@
 <body>
     <script>
 
+        function BytesToInt(val) {
+            return val[3] * (256 * 256 * 256) + val[2] * (256 * 256) + val[1] * 256 + val[0];
+        }
+
         async function ReadBinaryData() {
             fetch("http://localhost:5279/Files/GetBytes")
                 .then((response) => response.body)
                 .then((rb) => {
-                    const reader = rb.getReader();
+                    const reader = rb.getReader({ mode: undefined });
+                    let start = true;
+                    let imgSize = 0;
+                    let someFlag = false;
+                    let buffer;
 
                     function readRecurse() {
                         reader.read().then(({ done, value }) => {
                             if (done) {
                                 console.log('Response stream has ended');
                                 return;
+                            }
+
+                            if (start) {
+                                start = false;
+                                imgSize = BytesToInt(value.slice(0, 4));
+
+                                if (value.length > 4) {
+                                    someFlag = true;
+                                }
+                            }
+
+                            if (value.length > 4) {
+                                if (someFlag) {
+                                    value = value.slice(4);
+                                    someFlag = false;
+                                }
+
+                                if (buffer) {
+                                    let merged = new Uint8Array(buffer.length + value.length)
+                                    merged.set(buffer);
+                                    merged.set(value, buffer.length);
+                                    value = merged;
+                                }
+
+                                if (value.byteLength >= imgSize) {
+                                    var blob = new Blob([value.slice(0, imgSize + 1)], { type: "image/jpeg" });
+                                    var url = URL.createObjectURL(blob);
+
+                                    var img = document.createElement('img');
+                                    img.src = url;
+
+                                    document.body.append(img);
+
+                                    renderImage(blob);
+
+                                    start = true;
+                                    buffer = undefined;
+                                } else {
+                                    buffer = value;
+                                }
                             }
 
                             console.log(value);
@@ -28,6 +76,18 @@
 
                     readRecurse();
                 });
+        }
+
+        function renderImage(blob) {
+            const ctx = document.createElement('canvas');
+            const img = new Image()
+            img.onload = (event) => {
+                //URL.revokeObjectURL(event.target.src)
+                ctx.drawImage(event.target, 0, 0)
+            }
+            img.src = URL.createObjectURL(blob)
+
+            document.body.append(ctx);
         }
 
         ReadBinaryData();
