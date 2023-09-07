@@ -1,73 +1,36 @@
 <!doctype html>
 <html lang="en-US">
-  <head>
+<head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>Client</title>
-  </head>
-  <body>
+</head>
+<body>
     <script>
-        /*
-        const xhr = new XMLHttpRequest();
-        updateProgress = (event) => {
-            console.log(`Progress loaded ${event.loaded} of ${event.total}`);
-            console.log(xhr.response);
-            console.log(xhr.responseText);
-        };
 
-        xhr.addEventListener("progress", updateProgress);
+        async function ReadBinaryData() {
+            fetch("http://localhost:5279/Files/GetBytes")
+                .then((response) => response.body)
+                .then((rb) => {
+                    const reader = rb.getReader();
 
-        xhr.open("GET", "http://localhost:5279/Files/GetBytes", true);
-
-        // If specified, responseType must be empty string or "text"
-        // xhr.responseType = "blob";
-
-        
-
-        xhr.onloadstart = () => console.log('Load start');
-        xhr.onloadend = () => console.log('Load end');
-
-        xhr.send(null);
-        */
-
-        fetch("http://localhost:5279/Files/GetBytes")
-            .then((response) => response.body)
-            .then((rb) => {
-                const reader = rb.getReader();
-
-                return new ReadableStream({
-                start(controller) {
-                    // The following function handles each data chunk
-                    function push() {
-                        // "done" is a Boolean and value a "Uint8Array"
+                    function readRecurse() {
                         reader.read().then(({ done, value }) => {
-                            // If there is no more data to read
                             if (done) {
-                                console.log("done", done);
-                                controller.close();
+                                console.log('Response stream has ended');
                                 return;
                             }
-                            // Get the data and send it to the browser via the controller
-                            controller.enqueue(value);
-                            // Check chunks by logging to the console
-                            console.log(done, value);
-                            push();
+
+                            console.log(value);
+                            readRecurse();
                         });
                     }
 
-                    push();
-                },
+                    readRecurse();
                 });
-            })
-            .then((stream) =>
-                // Respond with our stream
-                new Response(stream, { headers: { "Content-Type": "text/html" } }).text(),
-            )
-            .then((result) => {
-                // Do things with result
-                console.log(result);
-            });
+        }
 
+        ReadBinaryData();
     </script>
-  </body>
+</body>
 </html>
