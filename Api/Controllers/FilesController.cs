@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Mvc;
-using System.Reflection;
-using System.Text;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
 {
