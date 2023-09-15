@@ -4,12 +4,11 @@ namespace Api;
 
 public class GalleryContext : DbContext
 {
-    public GalleryContext()
-    {
-    }
+    private readonly IConfiguration Configuration;
 
-    public GalleryContext(DbContextOptions<GalleryContext> options) : base(options)
+    public GalleryContext(DbContextOptions<GalleryContext> options, IConfiguration configuration) : base(options)
     {
+        Configuration = configuration;
     }
 
     public virtual DbSet<Image> Images
@@ -17,10 +16,8 @@ public class GalleryContext : DbContext
         get; set;
     }
 
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlite("Data Source=Gallery.db");
+        => optionsBuilder.UseSqlite(Configuration.GetConnectionString("sqlite"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

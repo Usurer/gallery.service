@@ -1,3 +1,5 @@
+using Api.Services;
+
 namespace Api
 {
     public class Program
@@ -14,11 +16,15 @@ namespace Api
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<GalleryContext>();
+
+            builder.Services.Configure<FileSystemOptions>(builder.Configuration.GetSection(FileSystemOptions.FileSystem));
+            builder.Services.AddScoped<IFileSystemService, FileSystemService>();
+
             builder.Services.AddCors(options =>
             {
                 options.AddDefaultPolicy(p =>
                 {
-                    p   
+                    p
                         .AllowAnyOrigin()
                         .AllowAnyHeader()
                         .AllowAnyMethod();
