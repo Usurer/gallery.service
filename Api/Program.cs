@@ -1,4 +1,7 @@
 using Api.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Api
 {
@@ -15,7 +18,10 @@ namespace Api
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddDbContext<GalleryContext>();
+            builder.Services.AddDbContext<GalleryContext>(options =>
+            {
+                options.UseSqlite(builder.Configuration.GetConnectionString("sqlite"));
+            });
 
             builder.Services.Configure<FileSystemOptions>(builder.Configuration.GetSection(FileSystemOptions.FileSystem));
             builder.Services.AddScoped<IFileSystemService, FileSystemService>();

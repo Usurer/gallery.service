@@ -16,9 +16,6 @@ public class GalleryContext : DbContext
         get; set;
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlite(Configuration.GetConnectionString("sqlite"));
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Image>(entity =>
