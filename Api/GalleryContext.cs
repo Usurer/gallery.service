@@ -4,11 +4,8 @@ namespace Api;
 
 public class GalleryContext : DbContext
 {
-    private readonly IConfiguration Configuration;
-
-    public GalleryContext(DbContextOptions<GalleryContext> options, IConfiguration configuration) : base(options)
+    public GalleryContext(DbContextOptions<GalleryContext> options) : base(options)
     {
-        Configuration = configuration;
     }
 
     public virtual DbSet<Image> Images
@@ -28,6 +25,11 @@ public class GalleryContext : DbContext
         });
 
         OnModelCreatingPartial(modelBuilder);
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
     }
 
     private void OnModelCreatingPartial(ModelBuilder modelBuilder)

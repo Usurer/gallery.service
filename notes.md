@@ -12,3 +12,7 @@ Also it's fine in FF
 But Chrome waits for Response to end.
 However it seems that the Streams API is the right way to handle it on the clent.
 For the future reference see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/getReader
+
+15.09.2023
+While working on the `GS-5` I've decided to put some efforts into figuring out how the heck the whole app starts,
+what is the `WebApplicationBuilder`, why sometimes we use `UseStartup` to configure services and other details related to it.
