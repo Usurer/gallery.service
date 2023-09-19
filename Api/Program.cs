@@ -7,7 +7,12 @@ namespace Api
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            // Not needed, can as well just pass args to CreateBuilder, i'll leave it here just a reminder
+            var options = new WebApplicationOptions
+            {
+                Args = args,
+            };
+            WebApplicationBuilder builder = WebApplication.CreateBuilder(options);
 
             // Add services to the container.
             builder.Services.AddControllers();
@@ -20,7 +25,9 @@ namespace Api
                 options.UseSqlite(builder.Configuration.GetConnectionString("sqlite"));
             });
 
-            builder.Services.Configure<FileSystemOptions>(builder.Configuration.GetSection(FileSystemOptions.FileSystem));
+            IConfigurationSection fileSystemConfigSection = builder.Configuration.GetSection(FileSystemOptions.FileSystem);
+
+            builder.Services.Configure<FileSystemOptions>("File System Options", fileSystemConfigSection);
             builder.Services.AddScoped<IFileSystemService, FileSystemService>();
 
             builder.Services.AddCors(options =>
@@ -34,7 +41,7 @@ namespace Api
                 });
             });
 
-            var app = builder.Build();
+            WebApplication app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
             {
@@ -56,7 +63,6 @@ namespace Api
             app.UseAuthorization();
 
             app.MapControllers();
-
 
             app.Run();
         }
