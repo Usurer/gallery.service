@@ -15,7 +15,7 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
-        public IEnumerable<IFileSystemItem> Scan(string folder)
+        public IEnumerable<IFileSystemItem> Scan(string? folder)
         {
             return FileSystemService.ScanFolder(folder);
         }

@@ -26,29 +26,98 @@ namespace Api.Services
 
             if (Directory.Exists(path))
             {
-                return new DirectoryInfo(path)
-                    .EnumerateFileSystemInfos()
-                    .Select<FileSystemInfo, IFileSystemItem>(x =>
+                var batchSize = 100;
+                var counter = 0;
+
+                var fileSystemInfos = new DirectoryInfo(path).EnumerateFileSystemInfos();
+
+                var batch = fileSystemInfos.Skip(counter * batchSize).Take(batchSize).ToArray();
+
+                while (batch.Length > 0)
+                {
+                    var buffer = new List<IFileSystemItem>();
+                    for (int i = 0; i < batch.Length; i++)
+                    {
+                        var fileSystemInfo = batch[i];
+                        var isDirectory = fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory);
+                        var existsInDb = DbContext
+                            .FileSystemItems
+                            .Any(x => string.Equals(x.Path, fileSystemInfo.FullName) && x.IsFolder == isDirectory);
+
+                        if (!existsInDb)
                         {
-                            var isDirectory = x.Attributes.HasFlag(FileAttributes.Directory);
                             if (isDirectory)
                             {
-                                var folderItem = new FolderItem() { Path = x.FullName, FullName = x.Name };
-                                var dbFolder = new FileSystemItem { Path = x.FullName, Name = x.Name, IsFolder = true };
-                                DbContext.FileSystemItems.Add(dbFolder);
-                                //DbContext.SaveChanges();
-                                return folderItem;
-                            }
+                                var folderItem = ToFolderItem(fileSystemInfo);
+                                buffer.Add(folderItem);
 
-                            var fileItem = new FileItem() { Path = x.FullName, FullName = x.Name };
-                            var dbFile = new FileSystemItem { Path = x.FullName, Name = x.Name, IsFolder = false };
-                            DbContext.FileSystemItems.Add(dbFile);
-                            return fileItem;
+                                var dbFolder = ToFileSystemItem(fileSystemInfo);
+                                DbContext.FileSystemItems.Add(dbFolder);
+                            }
+                            else
+                            {
+                                var fileItem = ToFileItem(fileSystemInfo);
+                                buffer.Add(fileItem);
+
+                                var dbFile = ToFileSystemItem(fileSystemInfo);
+                                DbContext.FileSystemItems.Add(dbFile);
+                            }
                         }
-                    );
+                        else
+                        {
+                            if (isDirectory)
+                            {
+                                var folderItem = ToFolderItem(fileSystemInfo);
+                                buffer.Add(folderItem);
+                            }
+                            else
+                            {
+                                var fileItem = ToFileItem(fileSystemInfo);
+                                buffer.Add(fileItem);
+                            }
+                        }
+                    }
+
+                    DbContext.SaveChanges();
+                    counter++;
+
+                    batch = fileSystemInfos.Skip(counter * batchSize).Take(batchSize).ToArray();
+
+                    foreach (var x in buffer)
+                        yield return x;
+                }
             }
 
-            return Enumerable.Empty<IFileSystemItem>();
+            // return Enumerable.Empty<IFileSystemItem>();
+        }
+
+        private static FileItem ToFileItem(FileSystemInfo fileSystemInfo)
+        {
+            return new FileItem()
+            {
+                Path = fileSystemInfo.FullName,
+                FullName = fileSystemInfo.Name,
+            };
+        }
+
+        private static FileSystemItem ToFileSystemItem(FileSystemInfo fileSystemInfo)
+        {
+            return new FileSystemItem
+            {
+                Path = fileSystemInfo.FullName,
+                Name = fileSystemInfo.Name,
+                IsFolder = fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory),
+                Extension = fileSystemInfo.Extension,
+            };
+        }
+
+        private static FolderItem ToFolderItem(FileSystemInfo fileSystemInfo)
+        {
+            return new FolderItem()
+            {
+                Path = fileSystemInfo.FullName,
+                FullName = fileSystemInfo.Name
+            };
         }
     }
 }
