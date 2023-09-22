@@ -1,3 +1,4 @@
+using Api.DTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -16,20 +17,20 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<Image> Get()
+        public IEnumerable<FileSystemItem> Get()
         {
-            var img = _context.Images;
-            return img;
+            var item = _context.FileSystemItems;
+            return item;
         }
 
         [HttpPut]
         public ActionResult Put()
         {
-            var img = new Image
+            var item = new FileSystemItem
             {
                 Path = "Some path",
             };
-            _context.Images.Add(img);
+            _context.FileSystemItems.Add(item);
             _context.SaveChanges();
 
             return Ok();

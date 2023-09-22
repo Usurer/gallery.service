@@ -46,6 +46,8 @@ we have it in, say, `appsettings.json`:
     }
 ```
 
+`builder.Services.Configure` has an overload that accepts 'The name of the options instance' as one of the parameters and I don't know
+what is it supposed to mean. When I put just a random string there, the configuraion was empty.
 
 Another interesting thing I've found is about `WebApplicationOptions.ApplicationName`
 It cannot be some random name you'd like, because of the following code from the `HostingHostBuilderExtensions.ApplyDefaultAppConfiguration`

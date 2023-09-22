@@ -27,7 +27,7 @@ namespace Api
 
             IConfigurationSection fileSystemConfigSection = builder.Configuration.GetSection(FileSystemOptions.FileSystem);
 
-            builder.Services.Configure<FileSystemOptions>("File System Options", fileSystemConfigSection);
+            builder.Services.Configure<FileSystemOptions>(fileSystemConfigSection);
             builder.Services.AddScoped<IFileSystemService, FileSystemService>();
 
             builder.Services.AddCors(options =>
