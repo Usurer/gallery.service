@@ -7,7 +7,7 @@ public class FileSystemItem
         get; set;
     }
 
-    public long ParentId
+    public long? ParentId
     {
         get; set;
     }
@@ -17,7 +17,7 @@ public class FileSystemItem
         get; set;
     }
 
-    public string? Path
+    public string Path
     {
         get; set;
     }

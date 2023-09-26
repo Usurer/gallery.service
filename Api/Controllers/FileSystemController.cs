@@ -7,17 +7,25 @@ namespace Api.Controllers
     [Route("internals/[controller]/[action]")]
     public class FileSystemController : ControllerBase
     {
+        private readonly IStorageService StorageService;
         private readonly IFileSystemService FileSystemService;
 
-        public FileSystemController(IFileSystemService fileSystemService)
+        public FileSystemController(IStorageService storageService, IFileSystemService fileSystemService)
         {
+            StorageService = storageService;
             FileSystemService = fileSystemService;
         }
 
         [HttpGet()]
-        public IEnumerable<IFileSystemItem> Scan(string? folder)
+        public async Task<ScanFolderResult> Scan(string? folder)
         {
-            return FileSystemService.ScanFolder(folder);
+            return await FileSystemService.ScanFolderAsync(folder, false, null);
+        }
+
+        [HttpGet()]
+        public IEnumerable<IFileSystemItem> GetFileSystemItems(string? folder)
+        {
+            return StorageService.GetFileSystemItems(folder);
         }
     }
 }

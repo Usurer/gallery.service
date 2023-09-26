@@ -1,11 +1,13 @@
 ﻿using Api.DTO;
+using Api.Utils;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
 
 namespace Api.Services
 {
     public interface IFileSystemService
     {
-        public IEnumerable<IFileSystemItem> ScanFolder(string? fullPath, bool recurse = false);
+        public Task<ScanFolderResult> ScanFolderAsync(string? fullPath, bool recurse, IProgress<int>? progress);
     }
 
     public class FileSystemService : IFileSystemService
@@ -20,104 +22,72 @@ namespace Api.Services
             DbContext = context;
         }
 
-        public IEnumerable<IFileSystemItem> ScanFolder(string? fullPath, bool recurse = false)
+        public async Task<ScanFolderResult> ScanFolderAsync(string? fullPath, bool recurse = false, IProgress<int>? progress = null)
         {
             var path = string.IsNullOrEmpty(fullPath) ? FileSystemOptions.DefaultFolder : fullPath;
+            var result = new ScanFolderResult();
 
             if (Directory.Exists(path))
             {
                 var batchSize = 100;
                 var counter = 0;
 
-                var fileSystemInfos = new DirectoryInfo(path).EnumerateFileSystemInfos();
+                var rootDirectoryInfo = new DirectoryInfo(path);
+                var rootDbRecord = DbContext.FileSystemItems.Where(x => string.Equals(x.Path, path)).FirstOrDefault();
+                if (rootDbRecord == null)
+                {
+                    rootDbRecord = rootDirectoryInfo.ToFileSystemItem(null);
+                    DbContext.Add(rootDbRecord);
+                    await DbContext.SaveChangesAsync();
+                }
+
+                var fileSystemInfos = rootDirectoryInfo.EnumerateFileSystemInfos();
 
                 var batch = fileSystemInfos.Skip(counter * batchSize).Take(batchSize).ToArray();
 
                 while (batch.Length > 0)
                 {
-                    var buffer = new List<IFileSystemItem>();
                     for (int i = 0; i < batch.Length; i++)
                     {
                         var fileSystemInfo = batch[i];
-                        var isDirectory = fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory);
+                        var isDirectory = fileSystemInfo.IsDirectory();
+
                         var existsInDb = DbContext
                             .FileSystemItems
-                            .Any(x => string.Equals(x.Path, fileSystemInfo.FullName) && x.IsFolder == isDirectory);
+                            .Any(x =>
+                                string.Equals(x.Path, fileSystemInfo.FullName)
+                                && x.IsFolder == isDirectory
+                                && x.ParentId == rootDbRecord.Id
+                            );
 
                         if (!existsInDb)
                         {
-                            if (isDirectory)
-                            {
-                                var folderItem = ToFolderItem(fileSystemInfo);
-                                buffer.Add(folderItem);
+                            FileSystemItem newItem = fileSystemInfo.ToFileSystemItem(rootDbRecord.Id);
 
-                                var dbFolder = ToFileSystemItem(fileSystemInfo);
-                                DbContext.FileSystemItems.Add(dbFolder);
-                            }
-                            else
-                            {
-                                var fileItem = ToFileItem(fileSystemInfo);
-                                buffer.Add(fileItem);
+                            DbContext.FileSystemItems.Add(newItem);
 
-                                var dbFile = ToFileSystemItem(fileSystemInfo);
-                                DbContext.FileSystemItems.Add(dbFile);
-                            }
-                        }
-                        else
-                        {
-                            if (isDirectory)
-                            {
-                                var folderItem = ToFolderItem(fileSystemInfo);
-                                buffer.Add(folderItem);
-                            }
-                            else
-                            {
-                                var fileItem = ToFileItem(fileSystemInfo);
-                                buffer.Add(fileItem);
-                            }
+                            // Yeah, these are not saved yet, just added to the Context, but okay
+                            result.Saved++;
                         }
                     }
 
-                    DbContext.SaveChanges();
+                    await DbContext.SaveChangesAsync();
+
+                    if (progress != null)
+                    {
+                        progress.Report(batchSize * counter + batch.Length);
+                    }
+
                     counter++;
 
                     batch = fileSystemInfos.Skip(counter * batchSize).Take(batchSize).ToArray();
-
-                    foreach (var x in buffer)
-                        yield return x;
                 }
+
+                // TODO: Incorect, fix this
+                result.Total = batchSize * counter + batch.Length;
             }
 
-            // return Enumerable.Empty<IFileSystemItem>();
-        }
-
-        private static FileItem ToFileItem(FileSystemInfo fileSystemInfo)
-        {
-            return new FileItem()
-            {
-                Path = fileSystemInfo.FullName,
-                FullName = fileSystemInfo.Name,
-            };
-        }
-
-        private static FileSystemItem ToFileSystemItem(FileSystemInfo fileSystemInfo)
-        {
-            return new FileSystemItem
-            {
-                Path = fileSystemInfo.FullName,
-                Name = fileSystemInfo.Name,
-                IsFolder = fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory),
-                Extension = fileSystemInfo.Extension,
-            };
-        }
-
-        private static FolderItem ToFolderItem(FileSystemInfo fileSystemInfo)
-        {
-            return new FolderItem()
-            {
-                Path = fileSystemInfo.FullName,
-                FullName = fileSystemInfo.Name
-            };
+            return result;
         }
     }
 }
