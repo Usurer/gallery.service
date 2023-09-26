@@ -56,10 +56,9 @@ namespace Api.Services
                             .FileSystemItems
                             .Any(x =>
                                 string.Equals(x.Path, fileSystemInfo.FullName)
-                                && x.IsFolder == isDirectory
-                                && x.ParentId == rootDbRecord.Id
                             );
 
+                        // TODO: Even if existsInDb we can update missing ParentId if it's possible
                         if (!existsInDb)
                         {
                             FileSystemItem newItem = fileSystemInfo.ToFileSystemItem(rootDbRecord.Id);
