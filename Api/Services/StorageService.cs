@@ -5,7 +5,7 @@ namespace Api.Services
 {
     public interface IStorageService
     {
-        public IList<IFileSystemItem> GetFileSystemItems(string? root);
+        public IList<IFileOrFolderInfo> GetFileSystemItems(string? root);
     }
 
     public class StorageService : IStorageService
@@ -20,7 +20,7 @@ namespace Api.Services
             FileSystemOptions = fileSystemOptions.Value;
         }
 
-        public IList<IFileSystemItem> GetFileSystemItems(string? root)
+        public IList<IFileOrFolderInfo> GetFileSystemItems(string? root)
         {
             IQueryable<FileSystemItem> items;
 
@@ -39,16 +39,16 @@ namespace Api.Services
 
             items = DbContext.FileSystemItems.Where(x => x.ParentId == parentId);
 
-            var result = new List<IFileSystemItem>();
+            var result = new List<IFileOrFolderInfo>();
             foreach (var item in items)
             {
                 if (item.IsFolder)
                 {
-                    result.Add(new FolderItem { FullName = item.Name, Path = item.Path });
+                    result.Add(new FolderInfo { Name = item.Name, Path = item.Path });
                 }
                 else
                 {
-                    result.Add(new FileItem { FullName = item.Name, Path = item.Path });
+                    result.Add(new FileInfo { Name = item.Name, Path = item.Path });
                 }
             }
 

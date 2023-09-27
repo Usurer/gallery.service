@@ -1,6 +1,5 @@
 ﻿using Api.DTO;
 using Api.Utils;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
 
 namespace Api.Services

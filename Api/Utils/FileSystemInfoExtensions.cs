@@ -10,21 +10,21 @@ namespace Api.Utils
             return info.Attributes.HasFlag(FileAttributes.Directory);
         }
 
-        public static FileItem ToFileItem(this FileSystemInfo fileSystemInfo)
+        public static Services.FileInfo ToFileItem(this FileSystemInfo fileSystemInfo)
         {
-            return new FileItem()
+            return new Services.FileInfo()
             {
                 Path = fileSystemInfo.FullName,
-                FullName = fileSystemInfo.Name,
+                Name = fileSystemInfo.Name,
             };
         }
 
-        public static FolderItem ToFolderItem(this FileSystemInfo fileSystemInfo)
+        public static FolderInfo ToFolderItem(this FileSystemInfo fileSystemInfo)
         {
-            return new FolderItem()
+            return new FolderInfo()
             {
                 Path = fileSystemInfo.FullName,
-                FullName = fileSystemInfo.Name,
+                Name = fileSystemInfo.Name,
             };
         }
 

@@ -23,7 +23,7 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
-        public IEnumerable<IFileSystemItem> GetFileSystemItems(string? folder)
+        public IEnumerable<IFileOrFolderInfo> GetFileSystemItems(string? folder)
         {
             return StorageService.GetFileSystemItems(folder);
         }

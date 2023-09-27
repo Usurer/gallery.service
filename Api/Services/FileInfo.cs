@@ -1,12 +1,8 @@
 ﻿namespace Api.Services
 {
-    public interface IFileItem : IFileSystemItem
+    public class FileInfo : IFileOrFolderInfo
     {
-    }
-
-    public class FileItem : IFileItem
-    {
-        public string FullName
+        public string Name
         {
             get;
             set;
@@ -17,5 +13,7 @@
             get;
             set;
         }
+
+        public bool IsFolder => false;
     }
 }
