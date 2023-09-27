@@ -1,4 +1,5 @@
 ﻿using Api.DTO;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Api.Services
@@ -37,7 +38,7 @@ namespace Api.Services
                     ?.Id
                 ?? throw new ApplicationException($"There is no record for a folder with a {root} path");
 
-            items = DbContext.FileSystemItems.Where(x => x.ParentId == parentId);
+            items = DbContext.FileSystemItems.Where(x => x.ParentId == parentId).AsNoTracking();
 
             var result = new List<IFileOrFolderInfo>();
             foreach (var item in items)

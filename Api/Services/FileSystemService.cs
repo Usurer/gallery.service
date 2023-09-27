@@ -29,7 +29,7 @@ namespace Api.Services
             if (Directory.Exists(path))
             {
                 var batchSize = 100;
-                var counter = 0;
+                var batchCounter = 0;
 
                 var rootDirectoryInfo = new DirectoryInfo(path);
                 var rootDbRecord = DbContext.FileSystemItems.Where(x => string.Equals(x.Path, path)).FirstOrDefault();
@@ -42,7 +42,7 @@ namespace Api.Services
 
                 var fileSystemInfos = rootDirectoryInfo.EnumerateFileSystemInfos();
 
-                var batch = fileSystemInfos.Skip(counter * batchSize).Take(batchSize).ToArray();
+                var batch = fileSystemInfos.Skip(batchCounter * batchSize).Take(batchSize).ToArray();
 
                 while (batch.Length > 0)
                 {
@@ -67,22 +67,20 @@ namespace Api.Services
                             // Yeah, these are not saved yet, just added to the Context, but okay
                             result.Saved++;
                         }
+                        result.Total++;
                     }
 
                     await DbContext.SaveChangesAsync();
 
                     if (progress != null)
                     {
-                        progress.Report(batchSize * counter + batch.Length);
+                        progress.Report(batchSize * batchCounter + batch.Length);
                     }
 
-                    counter++;
+                    batchCounter++;
 
-                    batch = fileSystemInfos.Skip(counter * batchSize).Take(batchSize).ToArray();
+                    batch = fileSystemInfos.Skip(batchCounter * batchSize).Take(batchSize).ToArray();
                 }
-
-                // TODO: Incorect, fix this
-                result.Total = batchSize * counter + batch.Length;
             }
 
             return result;
