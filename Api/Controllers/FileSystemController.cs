@@ -17,15 +17,21 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
-        public async Task<ScanFolderResult> Scan(string? folder)
+        public async Task<ScanFolderResult> ScanFolder(string? folder)
         {
-            return await FileSystemService.ScanFolderAsync(folder, false, null);
+            return await FileSystemService.ScanFolderAsync(folder, null);
+        }
+
+        [HttpGet()]
+        public async Task<IList<ScanFolderResult>> ScanTree(string? root)
+        {
+            return await FileSystemService.ScanTreeAsync(root);
         }
 
         [HttpGet()]
         public IEnumerable<IFileOrFolderInfo> GetFileSystemItems(string? folder)
         {
-            return StorageService.GetFileSystemItems(folder);
+            return StorageService.GetFileSystemItems(folder, 500);
         }
     }
 }

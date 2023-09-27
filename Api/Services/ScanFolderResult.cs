@@ -2,6 +2,16 @@
 {
     public class ScanFolderResult
     {
+        public ScanFolderResult(string path)
+        {
+            Path = path;
+        }
+
+        public string Path
+        {
+            get; init;
+        }
+
         public int Saved
         {
             get; set;

@@ -6,7 +6,7 @@ namespace Api.Services
 {
     public interface IStorageService
     {
-        public IList<IFileOrFolderInfo> GetFileSystemItems(string? root);
+        public IList<IFileOrFolderInfo> GetFileSystemItems(string? root, int take);
     }
 
     public class StorageService : IStorageService
@@ -21,7 +21,7 @@ namespace Api.Services
             FileSystemOptions = fileSystemOptions.Value;
         }
 
-        public IList<IFileOrFolderInfo> GetFileSystemItems(string? root)
+        public IList<IFileOrFolderInfo> GetFileSystemItems(string? root, int take)
         {
             IQueryable<FileSystemItem> items;
 
@@ -38,7 +38,7 @@ namespace Api.Services
                     ?.Id
                 ?? throw new ApplicationException($"There is no record for a folder with a {root} path");
 
-            items = DbContext.FileSystemItems.Where(x => x.ParentId == parentId).AsNoTracking();
+            items = DbContext.FileSystemItems.Where(x => x.ParentId == parentId).Take(take).AsNoTracking();
 
             var result = new List<IFileOrFolderInfo>();
             foreach (var item in items)

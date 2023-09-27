@@ -6,7 +6,9 @@ namespace Api.Services
 {
     public interface IFileSystemService
     {
-        public Task<ScanFolderResult> ScanFolderAsync(string? fullPath, bool recurse, IProgress<int>? progress);
+        public Task<ScanFolderResult> ScanFolderAsync(string? fullPath, IProgress<int>? progress);
+
+        public Task<IList<ScanFolderResult>> ScanTreeAsync(string? root);
     }
 
     public class FileSystemService : IFileSystemService
@@ -21,10 +23,34 @@ namespace Api.Services
             DbContext = context;
         }
 
-        public async Task<ScanFolderResult> ScanFolderAsync(string? fullPath, bool recurse = false, IProgress<int>? progress = null)
+        public async Task<IList<ScanFolderResult>> ScanTreeAsync(string? root)
+        {
+            if (!Directory.Exists(root))
+            {
+                return Array.Empty<ScanFolderResult>();
+            }
+
+            var rootDirectoryInfo = new DirectoryInfo(root);
+            var directories = rootDirectoryInfo.GetDirectories();
+
+            var results = new List<ScanFolderResult>();
+
+            var folderResult = await ScanFolderAsync(root);
+            results.Add(folderResult);
+
+            foreach (var directory in directories)
+            {
+                var subtreeResults = await ScanTreeAsync(directory.FullName);
+                results.AddRange(subtreeResults);
+            }
+
+            return results;
+        }
+
+        public async Task<ScanFolderResult> ScanFolderAsync(string? fullPath, IProgress<int>? progress = null)
         {
             var path = string.IsNullOrEmpty(fullPath) ? FileSystemOptions.DefaultFolder : fullPath;
-            var result = new ScanFolderResult();
+            var result = new ScanFolderResult(path);
 
             if (Directory.Exists(path))
             {
@@ -57,7 +83,7 @@ namespace Api.Services
                                 string.Equals(x.Path, fileSystemInfo.FullName)
                             );
 
-                        // TODO: Even if existsInDb we can update missing ParentId if it's possible
+                        // TODO: Even if existsInDb we can update missing ParentId if it's possible. Not sure about it
                         if (!existsInDb)
                         {
                             FileSystemItem newItem = fileSystemInfo.ToFileSystemItem(rootDbRecord.Id);
