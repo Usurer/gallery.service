@@ -23,9 +23,12 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
-        public async Task<IList<ScanFolderResult>> ScanTree(string? root)
+        public async IAsyncEnumerable<ScanFolderResult> ScanTree(string? root)
         {
-            return await FileSystemService.ScanTreeAsync(root);
+            await foreach (var r in FileSystemService.ScanTreeAsync(root))
+            {
+                yield return r;
+            }
         }
 
         [HttpGet()]

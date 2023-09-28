@@ -8,7 +8,7 @@ namespace Api.Services
     {
         public Task<ScanFolderResult> ScanFolderAsync(string? fullPath, IProgress<int>? progress);
 
-        public Task<IList<ScanFolderResult>> ScanTreeAsync(string? root);
+        public IAsyncEnumerable<ScanFolderResult> ScanTreeAsync(string? root);
     }
 
     public class FileSystemService : IFileSystemService
@@ -23,28 +23,30 @@ namespace Api.Services
             DbContext = context;
         }
 
-        public async Task<IList<ScanFolderResult>> ScanTreeAsync(string? root)
+        public async IAsyncEnumerable<ScanFolderResult> ScanTreeAsync(string? root)
         {
             if (!Directory.Exists(root))
             {
-                return Array.Empty<ScanFolderResult>();
+                yield break;
             }
 
             var rootDirectoryInfo = new DirectoryInfo(root);
             var directories = rootDirectoryInfo.GetDirectories();
 
-            var results = new List<ScanFolderResult>();
-
             var folderResult = await ScanFolderAsync(root);
-            results.Add(folderResult);
+            //results.Add(folderResult);
+            yield return folderResult;
 
             foreach (var directory in directories)
             {
-                var subtreeResults = await ScanTreeAsync(directory.FullName);
-                results.AddRange(subtreeResults);
+                var subtreeResults = ScanTreeAsync(directory.FullName);
+                await foreach (var subtreeResult in subtreeResults)
+                {
+                    yield return subtreeResult;
+                }
             }
 
-            return results;
+            yield break;
         }
 
         public async Task<ScanFolderResult> ScanFolderAsync(string? fullPath, IProgress<int>? progress = null)
