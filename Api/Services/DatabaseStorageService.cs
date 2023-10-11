@@ -17,7 +17,7 @@ namespace Api.Services
             FileSystemOptions = fileSystemOptions.Value;
         }
 
-        public IList<IFileOrFolderInfo> GetFileSystemItems(long? rootId, int take)
+        public IList<IItemInfo> GetFileSystemItems(long? rootId, int take)
         {
             IQueryable<FileSystemItem> items;
 
@@ -37,16 +37,16 @@ namespace Api.Services
                 .Take(take)
                 .AsNoTracking();
 
-            var result = new List<IFileOrFolderInfo>();
+            var result = new List<IItemInfo>();
             foreach (var item in items)
             {
                 if (item.IsFolder)
                 {
-                    result.Add(new FolderInfo { Name = item.Name, Id = item.Id });
+                    result.Add(new FolderItemInfo { Name = item.Name, Id = item.Id });
                 }
                 else
                 {
-                    result.Add(new DTO.FileInfo { Name = item.Name, Id = item.Id });
+                    result.Add(new DTO.FileItemInfo { Name = item.Name, Id = item.Id });
                 }
             }
 

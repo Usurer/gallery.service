@@ -1,20 +1,19 @@
 ﻿namespace Api.Services.DTO
 {
-    public interface IFileOrFolderInfo
+    public class FileItemInfo : IItemInfo
     {
         public long Id
         {
-            get; set;
+            get;
+            set;
         }
 
         public string Name
         {
-            get; set;
+            get;
+            set;
         }
 
-        public bool IsFolder
-        {
-            get;
-        }
+        public bool IsFolder => false;
     }
 }

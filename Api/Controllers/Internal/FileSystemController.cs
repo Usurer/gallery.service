@@ -3,8 +3,11 @@ using Api.Services.DTO;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers
+namespace Api.Controllers.Internal
 {
+    /// <summary>
+    /// Test controller to scan FS and query DB
+    /// </summary>
     [ApiController]
     [Route("internals/[controller]/[action]")]
     public class FileSystemController : ControllerBase
@@ -38,7 +41,7 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
-        public IEnumerable<IFileOrFolderInfo> GetFileSystemItems(long? rootId)
+        public IEnumerable<IItemInfo> GetFileSystemItems(long? rootId)
         {
             return StorageService.GetFileSystemItems(rootId, 500);
         }

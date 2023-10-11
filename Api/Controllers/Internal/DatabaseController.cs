@@ -1,10 +1,13 @@
 using Api.Database;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers
+namespace Api.Controllers.Internal
 {
+    /// <summary>
+    /// Test controller for direct access to the DbContext
+    /// </summary>
     [ApiController]
-    [Route("[controller]")]
+    [Route("internals/[controller]/[action]")]
     public class DatabaseController : ControllerBase
     {
         private readonly ILogger<DatabaseController> _logger;

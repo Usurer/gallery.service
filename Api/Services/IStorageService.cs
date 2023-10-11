@@ -4,6 +4,6 @@ namespace Api.Services
 {
     public interface IStorageService
     {
-        public IList<IFileOrFolderInfo> GetFileSystemItems(long? rootId, int take);
+        public IList<IItemInfo> GetFileSystemItems(long? rootId, int take);
     }
 }

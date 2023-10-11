@@ -1,6 +1,6 @@
 ﻿namespace Api.Services.DTO
 {
-    public class FolderInfo : IFileOrFolderInfo
+    public class FolderItemInfo : IItemInfo
     {
         public long Id
         {

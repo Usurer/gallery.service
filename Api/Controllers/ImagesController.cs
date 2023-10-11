@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
 {
+    /// <summary>
+    /// List images, get image by ID
+    /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
     public class ImagesController : ControllerBase

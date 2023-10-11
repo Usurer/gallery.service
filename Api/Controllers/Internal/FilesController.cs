@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers
+namespace Api.Controllers.Internal
 {
+    /// <summary>
+    /// Test controller to experiment with returning images in response
+    /// </summary>
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("internals/[controller]/[action]")]
     public class FilesController : ControllerBase
     {
         [HttpGet()]
