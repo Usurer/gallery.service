@@ -7,7 +7,7 @@
             get; set;
         }
 
-        public string Path
+        public long Id
         {
             get; set;
         }

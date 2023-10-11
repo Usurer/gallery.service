@@ -45,11 +45,11 @@ namespace Api.Services
             {
                 if (item.IsFolder)
                 {
-                    result.Add(new FolderInfo { Name = item.Name, Path = item.Path });
+                    result.Add(new FolderInfo { Name = item.Name, Id = item.Id });
                 }
                 else
                 {
-                    result.Add(new FileInfo { Name = item.Name, Path = item.Path });
+                    result.Add(new FileInfo { Name = item.Name, Id = item.Id });
                 }
             }
 

@@ -7,10 +7,10 @@ namespace Api.Controllers
     [Route("[controller]")]
     public class DatabaseController : ControllerBase
     {
-        private readonly ILogger<WeatherForecastController> _logger;
+        private readonly ILogger<DatabaseController> _logger;
         private readonly GalleryContext _context;
 
-        public DatabaseController(ILogger<WeatherForecastController> logger, GalleryContext context)
+        public DatabaseController(ILogger<DatabaseController> logger, GalleryContext context)
         {
             _logger = logger;
             _context = context;

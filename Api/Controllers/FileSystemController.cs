@@ -1,4 +1,5 @@
 ﻿using Api.Services;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -25,6 +26,10 @@ namespace Api.Controllers
         [HttpGet()]
         public async IAsyncEnumerable<ScanFolderResult> ScanTree(string? root)
         {
+            // Doesn't seem to work
+            var buffFeature = Response.HttpContext.Features.Get<IHttpResponseBodyFeature>();
+            buffFeature.DisableBuffering();
+
             await foreach (var r in FileSystemService.ScanTreeAsync(root))
             {
                 yield return r;
