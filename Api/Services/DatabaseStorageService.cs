@@ -1,4 +1,5 @@
-﻿using Api.DTO;
+﻿using Api.Database;
+using Api.Services.DTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -45,7 +46,7 @@ namespace Api.Services
                 }
                 else
                 {
-                    result.Add(new FileInfo { Name = item.Name, Id = item.Id });
+                    result.Add(new DTO.FileInfo { Name = item.Name, Id = item.Id });
                 }
             }
 

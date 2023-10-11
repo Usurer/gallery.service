@@ -1,7 +1,6 @@
-﻿using Api.DTO;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
-namespace Api;
+namespace Api.Database;
 
 public class GalleryContext : DbContext
 {

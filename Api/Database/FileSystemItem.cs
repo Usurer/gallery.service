@@ -1,4 +1,4 @@
-﻿namespace Api.DTO;
+﻿namespace Api.Database;
 
 public class FileSystemItem
 {

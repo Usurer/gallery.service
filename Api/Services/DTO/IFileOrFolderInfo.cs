@@ -1,4 +1,4 @@
-﻿namespace Api.Services
+﻿namespace Api.Services.DTO
 {
     public interface IFileOrFolderInfo
     {

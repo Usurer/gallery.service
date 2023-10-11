@@ -1,4 +1,6 @@
-﻿namespace Api.Services
+﻿using Api.Services.DTO;
+
+namespace Api.Services
 {
     public interface IStorageService
     {

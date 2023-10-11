@@ -1,6 +1,6 @@
-﻿namespace Api.Services
+﻿namespace Api.Services.DTO
 {
-    public class FolderInfo : IFileOrFolderInfo
+    public class FileInfo : IFileOrFolderInfo
     {
         public long Id
         {
@@ -14,6 +14,6 @@
             set;
         }
 
-        public bool IsFolder => true;
+        public bool IsFolder => false;
     }
 }

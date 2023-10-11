@@ -1,3 +1,4 @@
+using Api.Database;
 using Api.Services;
 using Microsoft.EntityFrameworkCore;
 

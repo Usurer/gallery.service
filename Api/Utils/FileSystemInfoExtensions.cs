@@ -1,4 +1,4 @@
-﻿using Api.DTO;
+﻿using Api.Database;
 
 namespace Api.Utils
 {

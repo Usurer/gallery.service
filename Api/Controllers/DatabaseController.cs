@@ -1,4 +1,4 @@
-using Api.DTO;
+using Api.Database;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
