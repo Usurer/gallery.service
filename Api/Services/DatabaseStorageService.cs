@@ -4,41 +4,37 @@ using Microsoft.Extensions.Options;
 
 namespace Api.Services
 {
-    public interface IStorageService
-    {
-        public IList<IFileOrFolderInfo> GetFileSystemItems(string? root, int take);
-    }
-
-    public class StorageService : IStorageService
+    public class DatabaseStorageService : IStorageService
     {
         private readonly GalleryContext DbContext;
 
         private readonly FileSystemOptions FileSystemOptions;
 
-        public StorageService(GalleryContext dbContext, IOptions<FileSystemOptions> fileSystemOptions)
+        public DatabaseStorageService(GalleryContext dbContext, IOptions<FileSystemOptions> fileSystemOptions)
         {
             DbContext = dbContext;
             FileSystemOptions = fileSystemOptions.Value;
         }
 
-        public IList<IFileOrFolderInfo> GetFileSystemItems(string? root, int take)
+        public IList<IFileOrFolderInfo> GetFileSystemItems(long? rootId, int take)
         {
             IQueryable<FileSystemItem> items;
 
-            if (string.IsNullOrWhiteSpace(root))
+            if (!rootId.HasValue)
             {
-                root = FileSystemOptions.DefaultFolder;
-            }
-
-            // Mind that we can't use StringComparison.Ordinal here and rely on Db collation
-            long parentId =
-                DbContext.FileSystemItems
-                    .Where(x => string.Equals(x.Path, root))
+                // Mind that we can't use StringComparison.Ordinal here and rely on Db collation
+                rootId = DbContext.FileSystemItems
+                    .Where(x => string.Equals(x.Path, FileSystemOptions.DefaultFolder))
                     .SingleOrDefault()
                     ?.Id
-                ?? throw new ApplicationException($"There is no record for a folder with a {root} path");
+                ?? throw new ApplicationException($"There is no record for a folder with a {rootId} id, nor for the defaul folder");
+            }
 
-            items = DbContext.FileSystemItems.Where(x => x.ParentId == parentId).Take(take).AsNoTracking();
+            items = DbContext
+                .FileSystemItems
+                .Where(x => x.ParentId == rootId)
+                .Take(take)
+                .AsNoTracking();
 
             var result = new List<IFileOrFolderInfo>();
             foreach (var item in items)

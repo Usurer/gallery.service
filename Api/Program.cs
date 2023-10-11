@@ -29,7 +29,7 @@ namespace Api
 
             builder.Services.Configure<FileSystemOptions>(fileSystemConfigSection);
             builder.Services.AddScoped<IFileSystemService, FileSystemService>();
-            builder.Services.AddScoped<IStorageService, StorageService>();
+            builder.Services.AddScoped<IStorageService, DatabaseStorageService>();
 
             builder.Services.AddCors(options =>
             {

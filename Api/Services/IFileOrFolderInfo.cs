@@ -2,12 +2,12 @@
 {
     public interface IFileOrFolderInfo
     {
-        public string Name
+        public long Id
         {
             get; set;
         }
 
-        public long Id
+        public string Name
         {
             get; set;
         }
