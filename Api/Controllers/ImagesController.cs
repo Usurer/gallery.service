@@ -1,5 +1,6 @@
 ﻿using Api.Services;
 using Api.Services.DTO;
+using Api.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -30,7 +31,7 @@ namespace Api.Controllers
                 return new EmptyResult();
             }
 
-            var mime = ExtensionToMime(imageData.Info.Extension);
+            var mime = MimeUtils.ExtensionToMime(imageData.Info.Extension);
             return new FileStreamResult(imageData.Data, mime);
         }
 
@@ -42,15 +43,6 @@ namespace Api.Controllers
             return _storageService.GetItems(parentId, take);
         }
 
-        private string ExtensionToMime(string extension)
-        {
-            // TODO: Fix #12 and remove Trim()
-            return extension.TrimStart('.').ToLowerInvariant() switch
-            {
-                "jpg" or "jpeg" => "image/jpeg",
-                "png" => "image/png",
-                _ => "image"
-            };
-        }
+        
     }
 }
