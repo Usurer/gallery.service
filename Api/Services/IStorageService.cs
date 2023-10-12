@@ -6,6 +6,6 @@ namespace Api.Services
     {
         public IList<IItemInfo> GetItems(long? rootId, int take);
 
-        public FileItemInfo GetImage(long id);
+        public FileItemData GetImage(long id);
     }
 }

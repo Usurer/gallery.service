@@ -53,7 +53,7 @@ namespace Api.Services
             return result;
         }
 
-        public FileItemInfo GetImage(long id)
+        public FileItemData GetImage(long id)
         {
             var fileItem = DbContext
                 .FileSystemItems
@@ -65,11 +65,14 @@ namespace Api.Services
             }
 
             var stream = new FileStream(fileItem.Path, FileMode.Open);
-            var info = new FileItemInfo
+            var info = new FileItemData
             {
-                Id = fileItem.Id,
-                Name = fileItem.Name,
-                Extension = fileItem.Extension,
+                Info = new FileItemInfo 
+                {
+                    Id = fileItem.Id,
+                    Name = fileItem.Name,
+                    Extension = fileItem.Extension!
+                },
                 Data = stream
             };
 

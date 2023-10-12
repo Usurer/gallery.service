@@ -30,11 +30,13 @@ namespace Api.Controllers
                 return new EmptyResult();
             }
 
-            var mime = ExtensionToMime(imageData.Extension);
+            var mime = ExtensionToMime(imageData.Info.Extension);
             return new FileStreamResult(imageData.Data, mime);
         }
 
         [HttpGet()]
+        // TODO: Should we use ActionResult<IEnumerable<IItemInfo>>?
+        // https://learn.microsoft.com/en-us/aspnet/core/web-api/action-return-types?view=aspnetcore-7.0#iactionresult-type
         public IEnumerable<IItemInfo> ListItems(long? parentId, int take = 10)
         {
             return _storageService.GetItems(parentId, take);
