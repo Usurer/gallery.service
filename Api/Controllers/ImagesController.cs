@@ -1,4 +1,5 @@
-﻿using Api.Database;
+﻿using Api.Services;
+using Api.Services.DTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -10,27 +11,33 @@ namespace Api.Controllers
     [Route("[controller]/[action]")]
     public class ImagesController : ControllerBase
     {
-        private readonly GalleryContext _context;
+        // TODO: We should not use DB context here directly, but get all data via IStorageService
+        private readonly IStorageService _storageService;
 
-        public ImagesController(GalleryContext context)
+        public ImagesController(IStorageService storageService)
         {
-            _context = context;
+            _storageService = storageService;
         }
 
         [HttpGet()]
-        public IActionResult Get(int id)
+        public IActionResult GetImage(long id)
         {
-            var fileItem = _context.FileSystemItems.SingleOrDefault(x => x.Id == id && x.IsFolder == false);
+            // imageData is disposable because of the Data stream, but FileStreamResult should take care of it
+            var imageData = _storageService.GetImage(id);
 
-            if (fileItem == null)
+            if (imageData == null)
             {
                 return new EmptyResult();
             }
 
-            var image = new FileStream(fileItem.Path, FileMode.Open);
-            var mime = ExtensionToMime(fileItem.Extension);
-            //return File(image, mime);
-            return new FileStreamResult(image, mime);
+            var mime = ExtensionToMime(imageData.Extension);
+            return new FileStreamResult(imageData.Data, mime);
+        }
+
+        [HttpGet()]
+        public IEnumerable<IItemInfo> ListItems(long? parentId, int take = 10)
+        {
+            return _storageService.GetItems(parentId, take);
         }
 
         private string ExtensionToMime(string extension)

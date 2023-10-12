@@ -17,7 +17,7 @@ namespace Api.Services
             FileSystemOptions = fileSystemOptions.Value;
         }
 
-        public IList<IItemInfo> GetFileSystemItems(long? rootId, int take)
+        public IList<IItemInfo> GetItems(long? rootId, int take)
         {
             IQueryable<FileSystemItem> items;
 
@@ -46,11 +46,34 @@ namespace Api.Services
                 }
                 else
                 {
-                    result.Add(new DTO.FileItemInfo { Name = item.Name, Id = item.Id });
+                    result.Add(new FileItemInfo { Name = item.Name, Id = item.Id });
                 }
             }
 
             return result;
+        }
+
+        public FileItemInfo GetImage(long id)
+        {
+            var fileItem = DbContext
+                .FileSystemItems
+                .SingleOrDefault(x => x.Id == id && x.IsFolder == false);
+
+            if (fileItem == null)
+            {
+                throw new ArgumentException("Id not found", nameof(id));
+            }
+
+            var stream = new FileStream(fileItem.Path, FileMode.Open);
+            var info = new FileItemInfo
+            {
+                Id = fileItem.Id,
+                Name = fileItem.Name,
+                Extension = fileItem.Extension,
+                Data = stream
+            };
+
+            return info;
         }
     }
 }
