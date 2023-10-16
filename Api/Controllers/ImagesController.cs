@@ -1,6 +1,7 @@
 ﻿using Api.Services;
 using Api.Services.DTO;
 using Api.Utils;
+using Imageflow.Fluent;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -36,13 +37,33 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
-        // TODO: Should we use ActionResult<IEnumerable<IItemInfo>>?
-        // https://learn.microsoft.com/en-us/aspnet/core/web-api/action-return-types?view=aspnetcore-7.0#iactionresult-type
+        public async Task<IActionResult> GetImagePreview(long id, int width)
+        {
+            using var imageData = _storageService.GetImage(id);
+
+            if (imageData == null)
+            {
+                return new EmptyResult();
+            }
+
+            Stream resizedStream = new MemoryStream();
+            var job = new ImageJob();
+            var result = await job.Decode(imageData.Data, true)
+                .ResizerCommands($"width={width}&mode=crop")
+                .Encode(new StreamDestination(resizedStream, false), new PngQuantEncoder())
+                .Finish()
+                .InProcessAsync();
+
+            resizedStream.Position = 0;
+
+            var mime = MimeUtils.ExtensionToMime(imageData.Info.Extension);
+            return new FileStreamResult(resizedStream, result.First.PreferredMimeType);
+        }
+
+        [HttpGet()]
         public IEnumerable<IItemInfo> ListItems(long? parentId, int take = 10)
         {
             return _storageService.GetItems(parentId, take);
         }
-
-        
     }
 }

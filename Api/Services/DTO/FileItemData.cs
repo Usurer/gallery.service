@@ -4,13 +4,13 @@
     {
         private bool disposedValue;
 
-        public required FileItemInfo Info
+        public FileItemInfo Info
         {
             get;
             set;
         }
-        
-        public required Stream Data
+
+        public Stream Data
         {
             get;
             set;
