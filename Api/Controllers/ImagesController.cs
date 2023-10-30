@@ -2,6 +2,7 @@
 using Api.Services.DTO;
 using Api.Utils;
 using Imageflow.Fluent;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -37,8 +38,22 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
-        public async Task<IActionResult> GetImagePreview(long id, int width)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        public async Task<IActionResult> GetImagePreview(long id, int? width, int? height)
         {
+            if (width == null && height == null)
+            {
+                return new ObjectResult(
+                    new
+                    {
+                        Message = "Either width or height should be provided"
+                    })
+                {
+                    StatusCode = StatusCodes.Status422UnprocessableEntity
+                };
+            }
+
             using var imageData = _storageService.GetImage(id);
 
             if (imageData == null)
@@ -46,10 +61,14 @@ namespace Api.Controllers
                 return new EmptyResult();
             }
 
+            var widthParam = width.HasValue ? $"width={width}" : string.Empty;
+            var heightParam = height.HasValue ? $"height={height}" : string.Empty;
+            var resizeParam = string.Join("&", new[] { widthParam, heightParam }.Where(x => !string.IsNullOrEmpty(x)));
+
             Stream resizedStream = new MemoryStream();
             var job = new ImageJob();
             var result = await job.Decode(imageData.Data, true)
-                .ResizerCommands($"width={width}&mode=crop")
+                .ResizerCommands($"{resizeParam}&mode=crop")
                 .Encode(new StreamDestination(resizedStream, false), new PngQuantEncoder())
                 .Finish()
                 .InProcessAsync();
