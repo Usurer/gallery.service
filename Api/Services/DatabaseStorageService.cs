@@ -64,10 +64,15 @@ namespace Api.Services
                 throw new ArgumentException("Id not found", nameof(id));
             }
 
+            /* From time to time I keep getting the System.IO.IOException:
+             * The process cannot access the file because it is being used by another process.
+             * Maybe I should just copy FileStream to a MemoryStream and release the file handler.
+             * TODO: Fix this
+             */
             var stream = new FileStream(fileItem.Path, FileMode.Open);
             var info = new FileItemData
             {
-                Info = new FileItemInfo 
+                Info = new FileItemInfo
                 {
                     Id = fileItem.Id,
                     Name = fileItem.Name,
