@@ -80,9 +80,9 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
-        public IEnumerable<IItemInfo> ListItems(long? parentId, int take = 10)
+        public IEnumerable<IItemInfo> ListItems(long? parentId, int skip = 0, int take = 10)
         {
-            return _storageService.GetItems(parentId, take);
+            return _storageService.GetItems(parentId, skip, take);
         }
     }
 }

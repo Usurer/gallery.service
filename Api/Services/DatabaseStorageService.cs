@@ -1,5 +1,6 @@
 ﻿using Api.Database;
 using Api.Services.DTO;
+using Api.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -17,38 +18,87 @@ namespace Api.Services
             FileSystemOptions = fileSystemOptions.Value;
         }
 
-        public IList<IItemInfo> GetItems(long? rootId, int take)
+        public IList<IItemInfo> GetItems(long? rootId, int skip, int take)
         {
             IQueryable<FileSystemItem> items;
 
             if (!rootId.HasValue)
             {
-                // Mind that we can't use StringComparison.Ordinal here and rely on Db collation
-                rootId = DbContext.FileSystemItems
-                    .Where(x => string.Equals(x.Path, FileSystemOptions.DefaultFolder))
-                    .SingleOrDefault()
-                    ?.Id
-                ?? throw new ApplicationException($"There is no record for a folder with a {rootId} id, nor for the defaul folder");
+                rootId = GetDefaultRoot(rootId);
             }
 
             items = DbContext
                 .FileSystemItems
                 .Where(x => x.ParentId == rootId)
-                .Take(take)
-                .AsNoTracking();
+                .OrderBy(x => x.CreationDate)
+                .Skip(skip)
+                .Take(take);
 
             var result = new List<IItemInfo>();
             foreach (var item in items)
             {
                 if (item.IsFolder)
                 {
-                    result.Add(new FolderItemInfo { Name = item.Name, Id = item.Id });
+                    result.Add(new FolderItemInfo
+                    {
+                        Id = item.Id,
+                        Name = item.Name,
+                        CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
+                    });
                 }
                 else
                 {
-                    result.Add(new FileItemInfo { Name = item.Name, Id = item.Id });
+                    result.Add(new FileItemInfo
+                    {
+                        Id = item.Id,
+                        Name = item.Name,
+                        CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate)
+                    });
                 }
             }
+
+            return result;
+        }
+
+        public CollectionMetadata GetCollectionMetadata(long? rootId)
+        {
+            if (!rootId.HasValue)
+            {
+                rootId = GetDefaultRoot(rootId);
+            }
+
+            var result = new CollectionMetadata()
+            {
+                RootId = rootId.Value,
+                ItemsPerMonth = new Dictionary<DateTime, int>()
+            };
+
+            using var connection = DbContext.Database.GetDbConnection();
+            connection.Open();
+
+            // TODO: Refactor this
+            var command = connection.CreateCommand();
+            command.CommandText = $"" +
+                $"SELECT count(id) as num, dateTime(CreationDate, 'unixepoch') as d " +
+                $"FROM FileSystemItems " +
+                $"Group By d";
+
+            using var reader = command.ExecuteReader();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    var count = reader.GetInt32(0);
+                    var dateTimeString = reader.GetString(1);
+                    // TODO: String format
+                    var dateTime = DateTime.Parse(dateTimeString);
+                    result.ItemsCount += count;
+                    result.ItemsPerMonth.Add(dateTime, count);
+                }
+            }
+
+            reader.Close();
+            connection.Close();
 
             return result;
         }
@@ -76,12 +126,25 @@ namespace Api.Services
                 {
                     Id = fileItem.Id,
                     Name = fileItem.Name,
+                    CreationDate = new DateTime(fileItem.CreationDate),
                     Extension = fileItem.Extension!
                 },
                 Data = stream
             };
 
             return info;
+        }
+
+        /// <exception cref="ArgumentException"></exception>
+        private long GetDefaultRoot(long? rootId)
+        {
+            // Mind that we can't use StringComparison.Ordinal here and rely on Db collation
+            rootId = DbContext.FileSystemItems
+                .Where(x => string.Equals(x.Path, FileSystemOptions.DefaultFolder))
+                .SingleOrDefault()
+                ?.Id
+            ?? throw new ArgumentException($"There is no record for the defaul folder");
+            return rootId.Value;
         }
     }
 }

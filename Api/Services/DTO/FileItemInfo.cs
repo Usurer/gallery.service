@@ -2,16 +2,21 @@
 {
     public class FileItemInfo : IItemInfo
     {
-        public long Id
+        public required long Id
         {
             get;
             set;
         }
 
-        public string Name
+        public required string Name
         {
             get;
             set;
+        }
+
+        public required DateTime CreationDate
+        {
+            get; set;
         }
 
         public string Extension

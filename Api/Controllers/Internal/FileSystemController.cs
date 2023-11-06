@@ -43,7 +43,7 @@ namespace Api.Controllers.Internal
         [HttpGet()]
         public IEnumerable<IItemInfo> GetFileSystemItems(long? rootId)
         {
-            return StorageService.GetItems(rootId, 500);
+            return StorageService.GetItems(rootId, 0, 500);
         }
     }
 }

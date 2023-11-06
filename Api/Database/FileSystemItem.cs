@@ -27,6 +27,11 @@ public class FileSystemItem
         get; set;
     }
 
+    public long CreationDate
+    {
+        get; set;
+    }
+
     public string? Extension
     {
         get; set;

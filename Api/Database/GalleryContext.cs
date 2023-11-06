@@ -24,6 +24,7 @@ public class GalleryContext : DbContext
             entity.Property(e => e.IsFolder);
             entity.Property(e => e.Path);
             entity.Property(e => e.Name);
+            entity.Property(e => e.CreationDate);
             entity.Property(e => e.Extension);
         });
 

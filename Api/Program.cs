@@ -24,6 +24,8 @@ namespace Api
             builder.Services.AddDbContext<GalleryContext>(options =>
             {
                 options.UseSqlite(builder.Configuration.GetConnectionString("sqlite"));
+                // TODO: Check if save works
+                options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             });
 
             IConfigurationSection fileSystemConfigSection = builder.Configuration.GetSection(FileSystemOptions.FileSystem);
