@@ -79,7 +79,7 @@ namespace Api.Services
             // TODO: Refactor this
             var command = connection.CreateCommand();
             command.CommandText = $"" +
-                $"SELECT count(id) as num, dateTime(CreationDate, 'unixepoch') as d " +
+                $"SELECT count(id) as num, dateTime(CreationDate, 'unixepoch', 'start of day') as d " +
                 $"FROM FileSystemItems " +
                 $"Group By d";
 
