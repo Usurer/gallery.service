@@ -81,6 +81,8 @@ namespace Api.Services
             command.CommandText = $"" +
                 $"SELECT count(id) as num, dateTime(CreationDate, 'unixepoch', 'start of day') as d " +
                 $"FROM FileSystemItems " +
+                $"WHERE isFolder = 0 " +
+                $"AND parentId = {rootId} " +
                 $"Group By d";
 
             using var reader = command.ExecuteReader();
