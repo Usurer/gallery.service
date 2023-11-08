@@ -8,8 +8,14 @@ namespace Api.Services
     {
         public Task<ScanFolderResult> ScanFolderAsync(string? fullPath, IProgress<int>? progress);
 
-        public IAsyncEnumerable<ScanFolderResult> ScanTreeAsync(string? root);
+        public IAsyncEnumerable<ScanFolderResult> ScanFoldersFromRootAsync(string? root);
     }
+
+    /*
+     * TODO: Refactor it
+     * I don't like how it's implemented right now - it's not clear that this class writes to DB
+     * Maybe it should only read FS data and then use IStorageService implementation to write it
+     * */
 
     public class FileSystemService : IFileSystemService
     {
@@ -23,8 +29,10 @@ namespace Api.Services
             DbContext = context;
         }
 
-        public async IAsyncEnumerable<ScanFolderResult> ScanTreeAsync(string? root)
+        public async IAsyncEnumerable<ScanFolderResult> ScanFoldersFromRootAsync(string? root)
         {
+            root = string.IsNullOrEmpty(root) ? FileSystemOptions.DefaultFolder : root.Trim();
+
             if (!Directory.Exists(root))
             {
                 yield break;
@@ -39,7 +47,7 @@ namespace Api.Services
 
             foreach (var directory in directories)
             {
-                var subtreeResults = ScanTreeAsync(directory.FullName);
+                var subtreeResults = ScanFoldersFromRootAsync(directory.FullName);
                 await foreach (var subtreeResult in subtreeResults)
                 {
                     yield return subtreeResult;
@@ -51,16 +59,20 @@ namespace Api.Services
 
         public async Task<ScanFolderResult> ScanFolderAsync(string? fullPath, IProgress<int>? progress = null)
         {
-            var path = string.IsNullOrEmpty(fullPath) ? FileSystemOptions.DefaultFolder : fullPath;
-            var result = new ScanFolderResult(path);
+            fullPath = string.IsNullOrEmpty(fullPath) ? FileSystemOptions.DefaultFolder : fullPath.Trim();
+            var result = new ScanFolderResult { Path = fullPath };
 
-            if (Directory.Exists(path))
+            if (Directory.Exists(fullPath))
             {
                 var batchSize = 100;
                 var batchCounter = 0;
 
-                var rootDirectoryInfo = new DirectoryInfo(path);
-                var rootDbRecord = DbContext.FileSystemItems.Where(x => string.Equals(x.Path, path)).FirstOrDefault();
+                var rootDirectoryInfo = new DirectoryInfo(fullPath);
+
+                // Use path from the filesystem instead of user-provided value
+                result.Path = rootDirectoryInfo.FullName;
+
+                var rootDbRecord = DbContext.FileSystemItems.Where(x => string.Equals(x.Path, fullPath)).FirstOrDefault();
                 if (rootDbRecord == null)
                 {
                     rootDbRecord = rootDirectoryInfo.ToFileSystemItem(null);

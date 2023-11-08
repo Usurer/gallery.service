@@ -2,14 +2,9 @@
 {
     public class ScanFolderResult
     {
-        public ScanFolderResult(string path)
-        {
-            Path = path;
-        }
-
         public string Path
         {
-            get; init;
+            get; set;
         }
 
         public int Saved

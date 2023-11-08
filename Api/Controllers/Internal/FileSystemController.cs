@@ -2,6 +2,7 @@
 using Api.Services.DTO;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Api.Controllers.Internal
 {
@@ -22,19 +23,22 @@ namespace Api.Controllers.Internal
         }
 
         [HttpGet()]
+        [SwaggerOperation("Scans a folder under the given fullPath, or default folder if fullPath is not provided")]
         public async Task<ScanFolderResult> ScanFolder(string? folder)
         {
             return await FileSystemService.ScanFolderAsync(folder, null);
         }
 
         [HttpGet()]
+        [SwaggerOperation("Scans all folders recursively, starting from root or default folder if root is not provided")]
+        [SwaggerResponse(200, "ScanFolderResult entity for every scanned folder")]
         public async IAsyncEnumerable<ScanFolderResult> ScanTree(string? root)
         {
             // Doesn't seem to work
             var buffFeature = Response.HttpContext.Features.Get<IHttpResponseBodyFeature>();
             buffFeature.DisableBuffering();
 
-            await foreach (var r in FileSystemService.ScanTreeAsync(root))
+            await foreach (var r in FileSystemService.ScanFoldersFromRootAsync(root))
             {
                 yield return r;
             }
