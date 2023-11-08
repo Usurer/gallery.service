@@ -1,6 +1,7 @@
 using Api.Database;
 using Api.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace Api
 {
@@ -19,7 +20,10 @@ namespace Api
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.EnableAnnotations();
+            });
 
             builder.Services.AddDbContext<GalleryContext>(options =>
             {
