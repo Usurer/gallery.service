@@ -9,7 +9,12 @@ namespace Api.Utils
             return info.Attributes.HasFlag(FileAttributes.Directory);
         }
 
-        public static FileSystemItem ToFileSystemItem(this FileSystemInfo fileSystemInfo, long? parentid)
+        public static FileSystemItem ToFileSystemItem(
+            this FileSystemInfo fileSystemInfo,
+            long? parentid,
+            int? width,
+            int? height
+            )
         {
             // Some files have Created date which is later than Modified date
             // Probably due to file copying
@@ -26,6 +31,8 @@ namespace Api.Utils
                 Extension = fileSystemInfo.Extension,
                 CreationDate = DateTimeUtils.ToUnixTimestamp(creationDate),
                 ParentId = parentid,
+                Width = width,
+                Height = height,
             };
         }
     }

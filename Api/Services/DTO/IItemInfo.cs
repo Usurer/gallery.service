@@ -4,20 +4,30 @@
     {
         public long Id
         {
-            get; set;
+            get;
         }
 
         public string Name
         {
-            get; set;
+            get;
         }
 
         public DateTime CreationDate
         {
-            get; set;
+            get;
         }
 
         public bool IsFolder
+        {
+            get;
+        }
+
+        public int? Width
+        {
+            get;
+        }
+
+        public int? Height
         {
             get;
         }

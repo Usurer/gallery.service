@@ -20,5 +20,9 @@
         }
 
         public bool IsFolder => true;
+
+        public int? Width => null;
+
+        public int? Height => null;
     }
 }

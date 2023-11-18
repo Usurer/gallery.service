@@ -1,5 +1,8 @@
-﻿using Api.Database;
+﻿using Api.Controllers.Internal;
+using Api.Database;
 using Api.Utils;
+using Imageflow.Bindings;
+using Imageflow.Fluent;
 using Microsoft.Extensions.Options;
 
 namespace Api.Services
@@ -23,10 +26,13 @@ namespace Api.Services
 
         private readonly GalleryContext DbContext;
 
-        public FileSystemService(IOptions<FileSystemOptions> options, GalleryContext context)
+        private readonly ILogger<FileSystemService> Logger;
+
+        public FileSystemService(IOptions<FileSystemOptions> options, GalleryContext context, ILogger<FileSystemService> logger)
         {
             FileSystemOptions = options.Value;
             DbContext = context;
+            Logger = logger;
         }
 
         public async IAsyncEnumerable<ScanFolderResult> ScanFoldersFromRootAsync(string? root)
@@ -75,7 +81,7 @@ namespace Api.Services
                 var rootDbRecord = DbContext.FileSystemItems.Where(x => string.Equals(x.Path, fullPath)).FirstOrDefault();
                 if (rootDbRecord == null)
                 {
-                    rootDbRecord = rootDirectoryInfo.ToFileSystemItem(null);
+                    rootDbRecord = rootDirectoryInfo.ToFileSystemItem(null, null, null);
                     DbContext.Add(rootDbRecord);
                     await DbContext.SaveChangesAsync();
                 }
@@ -100,7 +106,26 @@ namespace Api.Services
                         // TODO: Even if existsInDb we can update missing ParentId if it's possible. Not sure about it
                         if (!existsInDb)
                         {
-                            FileSystemItem newItem = fileSystemInfo.ToFileSystemItem(rootDbRecord.Id);
+                            ImageInfo? imageInfo = null;
+                            if (!isDirectory)
+                            {
+                                var job = new ImageJob();
+                                using var imageData = File.OpenRead(fileSystemInfo.FullName);
+                                try
+                                {
+                                    imageInfo = await ImageJob.GetImageInfo(new StreamSource(imageData, false));
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger.Log(LogLevel.Error, ex, $"Error while getting Image Info for {fileSystemInfo.FullName}");
+                                }
+                            }
+
+                            FileSystemItem newItem = fileSystemInfo.ToFileSystemItem(
+                                rootDbRecord.Id,
+                                imageInfo != null ? (int)imageInfo.ImageWidth : null,
+                                imageInfo != null ? (int)imageInfo.ImageHeight : null
+                            );
 
                             DbContext.FileSystemItems.Add(newItem);
 
