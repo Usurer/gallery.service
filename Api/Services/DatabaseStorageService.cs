@@ -37,6 +37,11 @@ namespace Api.Services
             var result = new List<IItemInfo>();
             foreach (var item in items)
             {
+                if (item.Name.EndsWith(".MP4", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    continue;
+                }
+
                 if (item.IsFolder)
                 {
                     result.Add(new FolderItemInfo
