@@ -52,7 +52,9 @@ namespace Api.Services
                     {
                         Id = item.Id,
                         Name = item.Name,
-                        CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate)
+                        CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
+                        Width = item.Width.Value,
+                        Height = item.Height.Value,
                     });
                 }
             }
@@ -129,7 +131,9 @@ namespace Api.Services
                     Id = fileItem.Id,
                     Name = fileItem.Name,
                     CreationDate = new DateTime(fileItem.CreationDate),
-                    Extension = fileItem.Extension!
+                    Extension = fileItem.Extension!,
+                    Width = fileItem.Width.Value,
+                    Height = fileItem.Height.Value,
                 },
                 Data = stream
             };
