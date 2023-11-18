@@ -4,6 +4,7 @@ using Api.Utils;
 using Imageflow.Fluent;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace Api.Controllers
 {
@@ -23,6 +24,7 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
+        [ResponseCache(Duration = 20)]
         public IActionResult GetImage(long id)
         {
             // imageData is disposable because of the Data stream, but FileStreamResult should take care of it
@@ -38,6 +40,7 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
+        [ResponseCache(Duration = 10)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<IActionResult> GetImagePreview(long id, int? width, int? height)
@@ -82,6 +85,10 @@ namespace Api.Controllers
         [HttpGet()]
         public IEnumerable<IItemInfo> ListItems(long? parentId, int skip = 0, int take = 10)
         {
+            /* TODO: Instead of IItemInfo[] return two arays: one of files, another of folders
+             * This will allow to get rid of IItemInfo which doesn't have any value
+             * And the whole thing would be better typed, because folders have no dimensions
+             */
             return _storageService.GetItems(parentId, skip, take);
         }
     }
