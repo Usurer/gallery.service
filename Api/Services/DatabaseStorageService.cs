@@ -18,6 +18,33 @@ namespace Api.Services
             FileSystemOptions = fileSystemOptions.Value;
         }
 
+        public IItemInfo GetItem(long id)
+        {
+            // TODO: Handle exception, return error
+            var item = DbContext
+                .FileSystemItems
+                .SingleOrDefault(x => x.Id == id);
+
+            if (item.IsFolder)
+            {
+                return new FolderItemInfo
+                {
+                    Id = item.Id,
+                    Name = item.Name,
+                    CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
+                };
+            }
+
+            return new FileItemInfo
+            {
+                Id = item.Id,
+                Name = item.Name,
+                CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
+                Width = item.Width.Value,
+                Height = item.Height.Value,
+            };
+        }
+
         public IList<IItemInfo> GetItems(long? rootId, int skip, int take)
         {
             IQueryable<FileSystemItem> items;

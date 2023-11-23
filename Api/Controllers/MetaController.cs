@@ -1,9 +1,10 @@
 ﻿using Api.Services;
+using Api.Services.DTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class MetaController : ControllerBase
     {
@@ -19,6 +20,13 @@ namespace Api.Controllers
         {
             var result = _storageService.GetCollectionMetadata(parentId);
             return Ok(result);
+        }
+
+        [HttpGet]
+        public IItemInfo GetItemMetadata(long id)
+        {
+            var result = _storageService.GetItem(id);
+            return result;
         }
     }
 }

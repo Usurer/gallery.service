@@ -24,7 +24,7 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
-        [ResponseCache(Duration = 20)]
+        [ResponseCache(Duration = 60)]
         public IActionResult GetImage(long id)
         {
             // imageData is disposable because of the Data stream, but FileStreamResult should take care of it
@@ -40,7 +40,7 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
-        [ResponseCache(Duration = 10)]
+        [ResponseCache(Duration = 60)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<IActionResult> GetImagePreview(long id, int? width, int? height)
