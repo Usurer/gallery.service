@@ -1,8 +1,8 @@
 using Api.Database;
+using Api.Middleware;
 using Api.Services;
 using EasyCaching.Disk;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace Api
 {
@@ -88,6 +88,8 @@ namespace Api
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
+
+            app.UseImageCachingMiddleware();
 
             app.MapControllers();
 

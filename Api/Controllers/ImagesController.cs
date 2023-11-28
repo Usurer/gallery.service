@@ -64,16 +64,16 @@ namespace Api.Controllers
                 };
             }
 
-            var _provider = _factory.GetCachingProvider("disk");
-            var cacheKey = $"{id}_{width}_{height}";
-            var cached = _provider.Get<byte[]>(cacheKey);
-            if (cached.HasValue)
-            {
-                Debug.WriteLine($"got {cacheKey} from cache");
-                var stream = new MemoryStream(cached.Value);
-                var mimeType = MimeUtils.ExtensionToMime("jpg");
-                return new FileStreamResult(stream, mimeType);
-            }
+            //var _provider = _factory.GetCachingProvider("disk");
+            //var cacheKey = $"{id}_{width}_{height}";
+            //var cached = _provider.Get<byte[]>(cacheKey);
+            //if (cached.HasValue)
+            //{
+            //    Debug.WriteLine($"got {cacheKey} from cache");
+            //    var stream = new MemoryStream(cached.Value);
+            //    var mimeType = MimeUtils.ExtensionToMime("jpg");
+            //    return new FileStreamResult(stream, mimeType);
+            //}
 
             using var imageData = _storageService.GetImage(id);
 
@@ -98,7 +98,7 @@ namespace Api.Controllers
             resizedStream.ToArray();
             resizedStream.Position = 0;
 
-            _provider.Set<byte[]>(cacheKey, resizedStream.ToArray(), TimeSpan.FromHours(1));
+            //_provider.Set<byte[]>(cacheKey, resizedStream.ToArray(), TimeSpan.FromHours(1));
 
             var mime = MimeUtils.ExtensionToMime(imageData.Info.Extension);
             return new FileStreamResult(resizedStream, result.First.PreferredMimeType);
