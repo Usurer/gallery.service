@@ -1,5 +1,6 @@
 using Api.Database;
 using Api.Services;
+using EasyCaching.Disk;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
@@ -47,6 +48,20 @@ namespace Api
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });
+            });
+
+            builder.Services.AddEasyCaching(options =>
+            {
+                //options.WithProtobuf("disk");
+                options.WithMessagePack("disk");
+
+                options.UseInMemory("in-memory");
+
+                //use disk cache
+                options.UseDisk(config =>
+                {
+                    config.DBConfig = new DiskDbOptions { BasePath = "C:\\Coding\\Meaningful Projects\\Gallery\\_cache" };
+                }, "disk");
             });
 
             WebApplication app = builder.Build();
