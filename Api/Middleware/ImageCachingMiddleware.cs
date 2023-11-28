@@ -34,9 +34,9 @@ namespace Api.Middleware
                 if (cached.HasValue)
                 {
                     //httpContext.Response.Body = new MemoryStream(cached.Value.Body);
-                    await httpContext.Response.BodyWriter.WriteAsync(cached.Value.Body);
                     httpContext.Response.Headers.ContentLength = cached.Value.ContentLength;
                     httpContext.Response.Headers.ContentType = cached.Value.ContentType;
+                    await httpContext.Response.BodyWriter.WriteAsync(cached.Value.Body);
                     return;
                 }
                 else
@@ -64,7 +64,8 @@ namespace Api.Middleware
 
                     _provider.Set<CachedResponse>(cacheKey, data, TimeSpan.FromHours(1));
 
-                    httpContext.Response.Body.Position = 0;
+                    httpContext.Response.Body = originalBody;
+                    await httpContext.Response.BodyWriter.WriteAsync(bytes);
                 }
             }
             else
