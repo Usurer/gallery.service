@@ -1,4 +1,5 @@
-﻿using EasyCaching.Core;
+﻿using Api.Attributes;
+using EasyCaching.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -24,18 +25,22 @@ namespace Api.Middleware
         public async Task Invoke(HttpContext httpContext)
         {
             var endpointFeature = httpContext.Features.Get<IEndpointFeature>()?.Endpoint;
-            var isImagePreview = endpointFeature?.DisplayName?.Contains("GetImagePreview");
+            var cacheAttribute = endpointFeature?.Metadata.GetMetadata<ImageCacheAttribute>();
 
-            if (isImagePreview == true)
+            if (cacheAttribute != null)
             {
                 var cacheKey = httpContext.Request.QueryString.Value;
                 var _provider = _cacheFactory.GetCachingProvider("disk");
                 var cached = _provider.Get<CachedResponse>(cacheKey);
                 if (cached.HasValue)
                 {
-                    //httpContext.Response.Body = new MemoryStream(cached.Value.Body);
+                    // TODO: Set Http Cache header
                     httpContext.Response.Headers.ContentLength = cached.Value.ContentLength;
                     httpContext.Response.Headers.ContentType = cached.Value.ContentType;
+
+                    // TODO: Figure out how to make client show images with 304 response code
+                    //httpContext.Response.StatusCode = StatusCodes.Status304NotModified;
+
                     await httpContext.Response.BodyWriter.WriteAsync(cached.Value.Body);
                     return;
                 }
@@ -62,7 +67,7 @@ namespace Api.Middleware
                         ContentType = contentType,
                     };
 
-                    _provider.Set<CachedResponse>(cacheKey, data, TimeSpan.FromHours(1));
+                    _provider.Set<CachedResponse>(cacheKey, data, TimeSpan.FromMinutes(cacheAttribute.DurationMinutes));
 
                     httpContext.Response.Body = originalBody;
                     await httpContext.Response.BodyWriter.WriteAsync(bytes);
