@@ -66,7 +66,11 @@ namespace Api
 
             builder.Services.AddDiskOutputCache(options =>
             {
-                options.AddBasePolicy(builder => builder.Expire(TimeSpan.FromHours(1)));
+                options.AddBasePolicy(builder => builder.NoCache());
+                //options.AddPolicy("DiskCache", builder =>
+                //{
+                //    builder.Expire(TimeSpan.FromHours(24 * 10));
+                //});
             });
 
             WebApplication app = builder.Build();
