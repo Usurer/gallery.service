@@ -64,6 +64,11 @@ namespace Api
                 }, "disk");
             });
 
+            builder.Services.AddDiskOutputCache(options =>
+            {
+                options.AddBasePolicy(builder => builder.Expire(TimeSpan.FromHours(1)));
+            });
+
             WebApplication app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
@@ -89,7 +94,9 @@ namespace Api
 
             app.UseAuthorization();
 
-            app.UseImageCachingMiddleware();
+            app.UseOutputCache();
+
+            //app.UseImageCachingMiddleware();
 
             app.MapControllers();
 

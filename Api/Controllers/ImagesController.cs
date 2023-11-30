@@ -45,7 +45,7 @@ namespace Api.Controllers
         [HttpGet()]
         // TODO: Add this feature to the ImageCaching Middleware
         //[ResponseCache(Duration = 60)]
-        [ImageCache(DurationMinutes = 60)]
+        //[ImageCache(DurationMinutes = 60)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<IActionResult> GetImagePreview(long id, int? width, int? height)

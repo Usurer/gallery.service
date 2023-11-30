@@ -67,7 +67,8 @@ namespace Api.Middleware
                         ContentType = contentType,
                     };
 
-                    _provider.Set<CachedResponse>(cacheKey, data, TimeSpan.FromMinutes(cacheAttribute.DurationMinutes));
+                    var cacheDuration = cacheAttribute.DurationMinutes > 0 ? cacheAttribute.DurationMinutes : 10;
+                    _provider.Set<CachedResponse>(cacheKey, data, TimeSpan.FromMinutes(cacheDuration));
 
                     httpContext.Response.Body = originalBody;
                     await httpContext.Response.BodyWriter.WriteAsync(bytes);
@@ -77,24 +78,6 @@ namespace Api.Middleware
             {
                 await _next(httpContext);
             }
-        }
-    }
-
-    public class CachedResponse
-    {
-        public long? ContentLength
-        {
-            get; set;
-        }
-
-        public string ContentType
-        {
-            get; set;
-        }
-
-        public byte[] Body
-        {
-            get; set;
         }
     }
 }
