@@ -41,10 +41,9 @@ namespace Api
 
             builder.Services.AddCors(options =>
             {
-                options.AddDefaultPolicy(p =>
+                options.AddDefaultPolicy(policy =>
                 {
-                    p
-                        .AllowAnyOrigin()
+                    policy.AllowAnyOrigin()
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });
@@ -52,26 +51,16 @@ namespace Api
 
             builder.Services.AddEasyCaching(options =>
             {
-                //options.WithProtobuf("disk");
                 options.WithMessagePack("disk");
-
                 options.UseInMemory("in-memory");
 
-                //use disk cache
                 options.UseDisk(config =>
                 {
                     config.DBConfig = new DiskDbOptions { BasePath = "C:\\Coding\\Meaningful Projects\\Gallery\\_cache" };
                 }, "disk");
             });
 
-            builder.Services.AddDiskOutputCache(options =>
-            {
-                options.AddBasePolicy(builder => builder.NoCache());
-                //options.AddPolicy("DiskCache", builder =>
-                //{
-                //    builder.Expire(TimeSpan.FromHours(24 * 10));
-                //});
-            });
+            builder.Services.AddScoped<ImageResizeService>();
 
             WebApplication app = builder.Build();
 
@@ -97,10 +86,6 @@ namespace Api
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
-            app.UseOutputCache();
-
-            //app.UseImageCachingMiddleware();
 
             app.MapControllers();
 

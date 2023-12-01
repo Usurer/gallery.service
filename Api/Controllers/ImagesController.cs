@@ -18,12 +18,14 @@ namespace Api.Controllers
     [Route("[controller]/[action]")]
     public class ImagesController : ControllerBase
     {
-        // TODO: We should not use DB context here directly, but get all data via IStorageService
         private readonly IStorageService _storageService;
 
-        public ImagesController(IStorageService storageService)
+        private readonly ImageResizeService _resizeService;
+
+        public ImagesController(IStorageService storageService, ImageResizeService resizeService)
         {
             _storageService = storageService;
+            _resizeService = resizeService;
         }
 
         [HttpGet()]
@@ -43,49 +45,29 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
-        // TODO: Add this feature to the ImageCaching Middleware
-        //[ResponseCache(Duration = 60)]
-        //[ImageCache(DurationMinutes = 60)]
-        [OutputCache(NoStore = false, Duration = 3600 * 24)]
+        [ResponseCache(Duration = 3600 * 24)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-        public async Task<IActionResult> GetImagePreview(long id, int? width, int? height)
+        public async Task<IResult> GetImagePreview(long id, int? width, int? height)
         {
             if (width == null && height == null)
             {
-                return new ObjectResult(
+                return Results.Json(
                     new
                     {
                         Message = "Either width or height should be provided"
-                    })
-                {
-                    StatusCode = StatusCodes.Status422UnprocessableEntity
-                };
+                    },
+                    statusCode: StatusCodes.Status422UnprocessableEntity
+                );
             }
 
-            using var imageData = _storageService.GetImage(id);
-
-            if (imageData == null)
+            var result = await _resizeService.GetAsync(id, width, height);
+            if (result == null)
             {
-                return new EmptyResult();
+                return Results.NoContent();
             }
 
-            var widthParam = width.HasValue ? $"width={width}" : string.Empty;
-            var heightParam = height.HasValue ? $"height={height}" : string.Empty;
-            var resizeParam = string.Join("&", new[] { widthParam, heightParam }.Where(x => !string.IsNullOrEmpty(x)));
-
-            MemoryStream resizedStream = new MemoryStream();
-            var job = new ImageJob();
-            var result = await job.Decode(imageData.Data, true)
-                .ResizerCommands($"{resizeParam}&mode=crop")
-                .Encode(new StreamDestination(resizedStream, false), new PngQuantEncoder())
-                .Finish()
-                .InProcessAsync();
-
-            resizedStream.Position = 0;
-
-            var mime = MimeUtils.ExtensionToMime(imageData.Info.Extension);
-            return new FileStreamResult(resizedStream, result.First.PreferredMimeType);
+            return Results.Bytes(result.Data, contentType: result.MimeType);
         }
 
         [HttpGet()]
