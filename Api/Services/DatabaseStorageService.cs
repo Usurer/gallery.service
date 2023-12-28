@@ -45,7 +45,7 @@ namespace Api.Services
             };
         }
 
-        public IList<IItemInfo> GetItems(long? rootId, int skip, int take, string[]? extensions)
+        public IEnumerable<FileItemInfo> GetFileItems(long? rootId, int skip, int take, string[]? extensions)
         {
             IQueryable<FileSystemItem> items;
 
@@ -57,11 +57,12 @@ namespace Api.Services
             items = DbContext
                 .FileSystemItems
                 .Where(x => x.ParentId == rootId)
+                .Where(x => !x.IsFolder)
                 .OrderBy(x => x.CreationDate)
                 .Skip(skip)
                 .Take(take);
 
-            var result = new List<IItemInfo>();
+            var result = new List<FileItemInfo>();
             foreach (var item in items)
             {
                 if (extensions != null)
@@ -77,26 +78,45 @@ namespace Api.Services
                     continue;
                 }
 
-                if (item.IsFolder)
+                result.Add(new FileItemInfo
                 {
-                    result.Add(new FolderItemInfo
-                    {
-                        Id = item.Id,
-                        Name = item.Name,
-                        CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
-                    });
-                }
-                else
+                    Id = item.Id,
+                    Name = item.Name,
+                    CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
+                    Width = item.Width.Value,
+                    Height = item.Height.Value,
+                });
+            }
+
+            return result;
+        }
+
+        public IEnumerable<FolderItemInfo> GetFolderItems(long? rootId, int skip, int take)
+        {
+            IQueryable<FileSystemItem> items;
+
+            if (!rootId.HasValue)
+            {
+                rootId = GetDefaultRoot(rootId);
+            }
+
+            items = DbContext
+                .FileSystemItems
+                .Where(x => x.ParentId == rootId)
+                .Where(x => x.IsFolder)
+                .OrderBy(x => x.CreationDate)
+                .Skip(skip)
+                .Take(take);
+
+            var result = new List<FolderItemInfo>();
+            foreach (var item in items)
+            {
+                result.Add(new FolderItemInfo
                 {
-                    result.Add(new FileItemInfo
-                    {
-                        Id = item.Id,
-                        Name = item.Name,
-                        CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
-                        Width = item.Width.Value,
-                        Height = item.Height.Value,
-                    });
-                }
+                    Id = item.Id,
+                    Name = item.Name,
+                    CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
+                });
             }
 
             return result;
