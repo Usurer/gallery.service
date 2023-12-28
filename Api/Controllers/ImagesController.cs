@@ -67,10 +67,6 @@ namespace Api.Controllers
         [HttpGet()]
         public IEnumerable<FileItemInfo> ListItems(long? parentId, int skip = 0, int take = 10, [FromQuery] string[]? extensions = null)
         {
-            /* TODO: Instead of IItemInfo[] return two arays: one of files, another of folders
-             * This will allow to get rid of IItemInfo which doesn't have any value
-             * And the whole thing would be better typed, because folders have no dimensions
-             */
             return _storageService.GetFileItems(parentId, skip, take, extensions);
         }
     }

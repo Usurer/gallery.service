@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Api.Services;
+using Api.Services.DTO;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
 {
@@ -6,5 +8,17 @@ namespace Api.Controllers
     [Route("[controller]/[action]")]
     public class FoldersController : ControllerBase
     {
+        private readonly IStorageService _storageService;
+
+        public FoldersController(IStorageService storageService)
+        {
+            _storageService = storageService;
+        }
+
+        [HttpGet]
+        public IEnumerable<FolderItemInfo> ListItems(long? parentId, int skip = 0, int take = 10)
+        {
+            return _storageService.GetFolderItems(parentId, skip, take);
+        }
     }
 }

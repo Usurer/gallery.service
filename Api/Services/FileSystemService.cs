@@ -78,7 +78,7 @@ namespace Api.Services
                 // Use path from the filesystem instead of user-provided value
                 result.Path = rootDirectoryInfo.FullName;
 
-                var rootDbRecord = DbContext.FileSystemItems.Where(x => string.Equals(x.Path, fullPath)).FirstOrDefault();
+                var rootDbRecord = DbContext.FileSystemItems.Where(x => string.Equals(x.Path, fullPath, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 if (rootDbRecord == null)
                 {
                     rootDbRecord = rootDirectoryInfo.ToFileSystemItem(null, null, null);
@@ -100,7 +100,7 @@ namespace Api.Services
                         var existsInDb = DbContext
                             .FileSystemItems
                             .Any(x =>
-                                string.Equals(x.Path, fileSystemInfo.FullName)
+                                string.Equals(x.Path, fileSystemInfo.FullName, StringComparison.OrdinalIgnoreCase)
                             );
 
                         // TODO: Even if existsInDb we can update missing ParentId if it's possible. Not sure about it
