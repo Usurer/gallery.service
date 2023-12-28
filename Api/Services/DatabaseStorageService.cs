@@ -18,7 +18,7 @@ namespace Api.Services
             FileSystemOptions = fileSystemOptions.Value;
         }
 
-        public IItemInfo GetItem(long id)
+        public ItemInfo GetItem(long id)
         {
             // TODO: Handle exception, return error
             var item = DbContext
@@ -42,6 +42,7 @@ namespace Api.Services
                 CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
                 Width = item.Width.Value,
                 Height = item.Height.Value,
+                Extension = item.Extension,
             };
         }
 
@@ -85,6 +86,7 @@ namespace Api.Services
                     CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
                     Width = item.Width.Value,
                     Height = item.Height.Value,
+                    Extension = item.Extension,
                 });
             }
 
@@ -191,7 +193,7 @@ namespace Api.Services
                     Id = fileItem.Id,
                     Name = fileItem.Name,
                     CreationDate = new DateTime(fileItem.CreationDate),
-                    Extension = fileItem.Extension!,
+                    Extension = fileItem.Extension,
                     Width = fileItem.Width.Value,
                     Height = fileItem.Height.Value,
                 },

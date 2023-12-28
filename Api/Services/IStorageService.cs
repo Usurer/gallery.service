@@ -4,7 +4,7 @@ namespace Api.Services
 {
     public interface IStorageService
     {
-        public IItemInfo GetItem(long id);
+        public ItemInfo GetItem(long id);
 
         public IEnumerable<FileItemInfo> GetFileItems(long? rootId, int skip, int take, string[]? extensions);
 

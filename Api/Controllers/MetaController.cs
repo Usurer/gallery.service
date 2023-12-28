@@ -23,7 +23,7 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public IItemInfo GetItemMetadata(long id)
+        public ItemInfo GetItemMetadata(long id)
         {
             var result = _storageService.GetItem(id);
             return result;
