@@ -1,8 +1,8 @@
 using Api.Database;
+using Api.Middleware;
 using Api.Services;
 using EasyCaching.Disk;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace Api
 {
@@ -41,10 +41,9 @@ namespace Api
 
             builder.Services.AddCors(options =>
             {
-                options.AddDefaultPolicy(p =>
+                options.AddDefaultPolicy(policy =>
                 {
-                    p
-                        .AllowAnyOrigin()
+                    policy.AllowAnyOrigin()
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });
@@ -52,17 +51,16 @@ namespace Api
 
             builder.Services.AddEasyCaching(options =>
             {
-                //options.WithProtobuf("disk");
                 options.WithMessagePack("disk");
-
                 options.UseInMemory("in-memory");
 
-                //use disk cache
                 options.UseDisk(config =>
                 {
                     config.DBConfig = new DiskDbOptions { BasePath = "C:\\Coding\\Meaningful Projects\\Gallery\\_cache" };
                 }, "disk");
             });
+
+            builder.Services.AddScoped<ImageResizeService>();
 
             WebApplication app = builder.Build();
 

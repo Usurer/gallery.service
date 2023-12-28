@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("[controller]/[action]")]
     [ApiController]
     public class MetaController : ControllerBase
     {
@@ -16,10 +16,10 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetImagesMetadata(long? parentId)
+        public CollectionMetadata GetImagesMetadata(long? parentId)
         {
             var result = _storageService.GetCollectionMetadata(parentId);
-            return Ok(result);
+            return result;
         }
 
         [HttpGet]

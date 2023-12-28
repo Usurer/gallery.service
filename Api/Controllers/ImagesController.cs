@@ -1,4 +1,5 @@
-﻿using Api.Services;
+﻿using Api.Attributes;
+using Api.Services;
 using Api.Services.DTO;
 using Api.Utils;
 using EasyCaching.Core;
@@ -17,17 +18,14 @@ namespace Api.Controllers
     [Route("[controller]/[action]")]
     public class ImagesController : ControllerBase
     {
-        // TODO: We should not use DB context here directly, but get all data via IStorageService
         private readonly IStorageService _storageService;
 
-        //private readonly IEasyCachingProvider _provider;
-        private readonly IEasyCachingProviderFactory _factory;
+        private readonly ImageResizeService _resizeService;
 
-        public ImagesController(IStorageService storageService, IEasyCachingProviderFactory factory)
+        public ImagesController(IStorageService storageService, ImageResizeService resizeService)
         {
             _storageService = storageService;
-            //_provider = provider;
-            _factory = factory;
+            _resizeService = resizeService;
         }
 
         [HttpGet()]
@@ -47,61 +45,29 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
-        //[ResponseCache(Duration = 60)]
+        [ResponseCache(Duration = 3600 * 24)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-        public async Task<IActionResult> GetImagePreview(long id, int? width, int? height)
+        public async Task<IResult> GetImagePreview(long id, int? width, int? height)
         {
             if (width == null && height == null)
             {
-                return new ObjectResult(
+                return Results.Json(
                     new
                     {
                         Message = "Either width or height should be provided"
-                    })
-                {
-                    StatusCode = StatusCodes.Status422UnprocessableEntity
-                };
+                    },
+                    statusCode: StatusCodes.Status422UnprocessableEntity
+                );
             }
 
-            var _provider = _factory.GetCachingProvider("disk");
-            var cacheKey = $"{id}_{width}_{height}";
-            var cached = _provider.Get<byte[]>(cacheKey);
-            if (cached.HasValue)
+            var result = await _resizeService.GetAsync(id, width, height);
+            if (result == null)
             {
-                Debug.WriteLine($"got {cacheKey} from cache");
-                var stream = new MemoryStream(cached.Value);
-                var mimeType = MimeUtils.ExtensionToMime("jpg");
-                return new FileStreamResult(stream, mimeType);
+                return Results.NoContent();
             }
 
-            using var imageData = _storageService.GetImage(id);
-
-            if (imageData == null)
-            {
-                return new EmptyResult();
-            }
-
-            var widthParam = width.HasValue ? $"width={width}" : string.Empty;
-            var heightParam = height.HasValue ? $"height={height}" : string.Empty;
-            var resizeParam = string.Join("&", new[] { widthParam, heightParam }.Where(x => !string.IsNullOrEmpty(x)));
-
-            MemoryStream resizedStream = new MemoryStream();
-            var job = new ImageJob();
-            var result = await job.Decode(imageData.Data, true)
-                .ResizerCommands($"{resizeParam}&mode=crop")
-                .Encode(new StreamDestination(resizedStream, false), new PngQuantEncoder())
-                .Finish()
-                .InProcessAsync();
-
-            resizedStream.Position = 0;
-            resizedStream.ToArray();
-            resizedStream.Position = 0;
-
-            _provider.Set<byte[]>(cacheKey, resizedStream.ToArray(), TimeSpan.FromHours(1));
-
-            var mime = MimeUtils.ExtensionToMime(imageData.Info.Extension);
-            return new FileStreamResult(resizedStream, result.First.PreferredMimeType);
+            return Results.Bytes(result.Data, contentType: result.MimeType);
         }
 
         [HttpGet()]
