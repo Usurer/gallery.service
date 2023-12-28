@@ -6,7 +6,7 @@ namespace Api.Services
     {
         public IItemInfo GetItem(long id);
 
-        public IList<IItemInfo> GetItems(long? rootId, int skip, int take);
+        public IList<IItemInfo> GetItems(long? rootId, int skip, int take, string[]? extensions);
 
         public CollectionMetadata GetCollectionMetadata(long? rootId);
 

@@ -45,7 +45,7 @@ namespace Api.Services
             };
         }
 
-        public IList<IItemInfo> GetItems(long? rootId, int skip, int take)
+        public IList<IItemInfo> GetItems(long? rootId, int skip, int take, string[]? extensions)
         {
             IQueryable<FileSystemItem> items;
 
@@ -64,6 +64,14 @@ namespace Api.Services
             var result = new List<IItemInfo>();
             foreach (var item in items)
             {
+                if (extensions != null)
+                {
+                    if (!extensions.Contains(item.Extension, StringComparer.InvariantCultureIgnoreCase))
+                    {
+                        continue;
+                    }
+                }
+
                 if (item.Name.EndsWith(".MP4", StringComparison.InvariantCultureIgnoreCase))
                 {
                     continue;

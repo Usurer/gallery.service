@@ -1,13 +1,7 @@
-﻿using Api.Attributes;
-using Api.Services;
+﻿using Api.Services;
 using Api.Services.DTO;
 using Api.Utils;
-using EasyCaching.Core;
-using Imageflow.Fluent;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OutputCaching;
-using System.Diagnostics;
 
 namespace Api.Controllers
 {
@@ -71,13 +65,13 @@ namespace Api.Controllers
         }
 
         [HttpGet()]
-        public IEnumerable<IItemInfo> ListItems(long? parentId, int skip = 0, int take = 10)
+        public IEnumerable<IItemInfo> ListItems(long? parentId, int skip = 0, int take = 10, [FromQuery] string[]? extensions = null)
         {
             /* TODO: Instead of IItemInfo[] return two arays: one of files, another of folders
              * This will allow to get rid of IItemInfo which doesn't have any value
              * And the whole thing would be better typed, because folders have no dimensions
              */
-            return _storageService.GetItems(parentId, skip, take);
+            return _storageService.GetItems(parentId, skip, take, extensions);
         }
     }
 }
