@@ -20,5 +20,11 @@ namespace Api.Controllers
         {
             return _storageService.GetFolderItems(parentId, skip, take);
         }
+
+        [HttpGet]
+        public IEnumerable<FolderItemInfo> GetAncestors(long folderId)
+        {
+            return _storageService.GetFolderAncestors(folderId);
+        }
     }
 }

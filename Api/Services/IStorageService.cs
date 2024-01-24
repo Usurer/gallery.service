@@ -10,6 +10,8 @@ namespace Api.Services
 
         public IEnumerable<FolderItemInfo> GetFolderItems(long? rootId, int skip, int take);
 
+        public IEnumerable<FolderItemInfo> GetFolderAncestors(long folderId);
+
         public CollectionMetadata GetCollectionMetadata(long? rootId);
 
         public FileItemData GetImage(long id);

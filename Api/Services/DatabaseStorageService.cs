@@ -102,9 +102,18 @@ namespace Api.Services
                 rootId = GetDefaultRoot(rootId);
             }
 
-            items = DbContext
-                .FileSystemItems
-                .Where(x => x.ParentId == rootId)
+            items = DbContext.FileSystemItems;
+
+            if (!rootId.HasValue)
+            {
+                items = items.Where(x => x.ParentId == null);
+            }
+            else
+            {
+                items = items.Where(x => x.ParentId == rootId);
+            }
+
+            items = items
                 .Where(x => x.IsFolder)
                 .OrderBy(x => x.CreationDate)
                 .Skip(skip)
@@ -122,6 +131,44 @@ namespace Api.Services
             }
 
             return result;
+        }
+
+        public IEnumerable<FolderItemInfo> GetFolderAncestors(long folderId)
+        {
+            var ansectors = new List<FileSystemItem>();
+            var currentFolder = DbContext
+                .FileSystemItems
+                .SingleOrDefault(x => x.Id == folderId && x.IsFolder);
+
+            if (currentFolder == null)
+            {
+                // TODO: Log?
+                return Enumerable.Empty<FolderItemInfo>();
+            }
+
+            ansectors.Add(currentFolder);
+
+            var parent = DbContext
+                .FileSystemItems
+                .SingleOrDefault(x => x.Id == currentFolder.ParentId && x.IsFolder);
+
+            while (parent != null)
+            {
+                ansectors.Add(parent);
+                parent = DbContext
+                    .FileSystemItems
+                    .SingleOrDefault(x => x.Id == parent.ParentId && x.IsFolder);
+            }
+
+            return ansectors.Select(x =>
+            {
+                return new FolderItemInfo
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    CreationDate = DateTimeUtils.FromUnixTimestamp(x.CreationDate),
+                };
+            });
         }
 
         public CollectionMetadata GetCollectionMetadata(long? rootId)
