@@ -1,5 +1,4 @@
 using Api.Database;
-using Api.Middleware;
 using Api.Services;
 using EasyCaching.Disk;
 using Microsoft.EntityFrameworkCore;
