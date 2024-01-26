@@ -64,10 +64,10 @@ namespace Api.Controllers
             return Results.Bytes(result.Data, contentType: result.MimeType);
         }
 
-        [HttpGet()]
-        public IEnumerable<FileItemInfo> ListItems(long? parentId, int skip = 0, int take = 10, [FromQuery] string[]? extensions = null)
+        [HttpGet("{folderId}")]
+        public IEnumerable<FileItemInfo> ListItems(long? folderId, int skip = 0, int take = 10, [FromQuery] string[]? extensions = null)
         {
-            return _storageService.GetFileItems(parentId, skip, take, extensions);
+            return _storageService.GetFileItems(folderId, skip, take, extensions);
         }
     }
 }

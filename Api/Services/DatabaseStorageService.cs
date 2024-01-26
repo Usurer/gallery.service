@@ -46,18 +46,18 @@ namespace Api.Services
             };
         }
 
-        public IEnumerable<FileItemInfo> GetFileItems(long? rootId, int skip, int take, string[]? extensions)
+        public IEnumerable<FileItemInfo> GetFileItems(long? folderId, int skip, int take, string[]? extensions)
         {
             IQueryable<FileSystemItem> items;
 
-            if (!rootId.HasValue)
+            if (!folderId.HasValue)
             {
-                rootId = GetDefaultRoot(rootId);
+                folderId = GetDefaultRoot(folderId);
             }
 
             items = DbContext
                 .FileSystemItems
-                .Where(x => x.ParentId == rootId)
+                .Where(x => x.ParentId == folderId)
                 .Where(x => !x.IsFolder)
                 .OrderBy(x => x.CreationDate)
                 .Skip(skip)
@@ -93,24 +93,24 @@ namespace Api.Services
             return result;
         }
 
-        public IEnumerable<FolderItemInfo> GetFolderItems(long? rootId, int skip, int take)
+        public IEnumerable<FolderItemInfo> GetFolderItems(long? folderId, int skip, int take)
         {
             IQueryable<FileSystemItem> items;
 
-            if (!rootId.HasValue)
+            if (!folderId.HasValue)
             {
-                rootId = GetDefaultRoot(rootId);
+                folderId = GetDefaultRoot(folderId);
             }
 
             items = DbContext.FileSystemItems;
 
-            if (!rootId.HasValue)
+            if (!folderId.HasValue)
             {
                 items = items.Where(x => x.ParentId == null);
             }
             else
             {
-                items = items.Where(x => x.ParentId == rootId);
+                items = items.Where(x => x.ParentId == folderId);
             }
 
             items = items

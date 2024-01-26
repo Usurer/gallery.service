@@ -6,9 +6,9 @@ namespace Api.Services
     {
         public ItemInfo GetItem(long id);
 
-        public IEnumerable<FileItemInfo> GetFileItems(long? rootId, int skip, int take, string[]? extensions);
+        public IEnumerable<FileItemInfo> GetFileItems(long? folderId, int skip, int take, string[]? extensions);
 
-        public IEnumerable<FolderItemInfo> GetFolderItems(long? rootId, int skip, int take);
+        public IEnumerable<FolderItemInfo> GetFolderItems(long? folderId, int skip, int take);
 
         public IEnumerable<FolderItemInfo> GetFolderAncestors(long folderId);
 
