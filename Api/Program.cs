@@ -1,3 +1,4 @@
+using Api.BackgroundServices;
 using Api.Database;
 using Api.Services;
 using EasyCaching.Disk;
@@ -60,6 +61,8 @@ namespace Api
             });
 
             builder.Services.AddScoped<ImageResizeService>();
+
+            builder.Services.AddHostedService<ScheduledScanService>();
 
             WebApplication app = builder.Build();
 
