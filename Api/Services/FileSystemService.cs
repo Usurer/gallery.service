@@ -41,7 +41,7 @@ namespace Api.Services
 
             if (!Directory.Exists(root))
             {
-                yield break;
+                throw new ApplicationException($"Path {root} doesn't exist");
             }
 
             var rootDirectoryInfo = new DirectoryInfo(root);

@@ -22,17 +22,17 @@ namespace Api.Controllers.Internal
             FileSystemService = fileSystemService;
         }
 
-        [HttpGet()]
+        [HttpPost()]
         [SwaggerOperation("Scans a folder under the given fullPath, or default folder if fullPath is not provided")]
         public async Task<ScanFolderResult> ScanFolder(string? folder)
         {
             return await FileSystemService.ScanFolderAsync(folder, null);
         }
 
-        [HttpGet()]
+        [HttpPost()]
         [SwaggerOperation("Scans all folders recursively, starting from root or default folder if root is not provided")]
         [SwaggerResponse(200, "ScanFolderResult entity for every scanned folder")]
-        public async IAsyncEnumerable<ScanFolderResult> ScanTree(string? root)
+        public async IAsyncEnumerable<ScanFolderResult> ScanTree([FromBody] string? root)
         {
             // Doesn't seem to work
             var buffFeature = Response.HttpContext.Features.Get<IHttpResponseBodyFeature>();

@@ -15,7 +15,7 @@ namespace Api.Controllers
             _storageService = storageService;
         }
 
-        [HttpGet]
+        [HttpGet("{parentId}")]
         public IEnumerable<FolderItemInfo> ListItems(long? parentId, int skip = 0, int take = 10)
         {
             return _storageService.GetFolderItems(parentId, skip, take);
