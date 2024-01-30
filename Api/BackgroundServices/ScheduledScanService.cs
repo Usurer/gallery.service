@@ -6,6 +6,7 @@ namespace Api.BackgroundServices
     {
         private readonly IServiceProvider Services;
         private Timer? timer = null;
+        private bool IsRunning;
 
         public ScheduledScanService(IServiceProvider services)
         {
@@ -27,9 +28,14 @@ namespace Api.BackgroundServices
 
         private void GetItems(object? state)
         {
+            if (IsRunning)
+                return;
+
+            IsRunning = true;
             using var scope = Services.CreateScope();
             var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
             var items = storageService.GetFolderItems(null, 0, 1);
+            IsRunning = false;
         }
 
         public void Dispose()

@@ -28,6 +28,16 @@ public class GalleryContext : DbContext
             entity.Property(e => e.Extension);
         });
 
+        modelBuilder.Entity<FolderScanState>(entity =>
+        {
+            entity.ToTable("FolderScanStates");
+
+            entity.Property(e => e.Id).HasColumnType("INTEGER").IsRequired();
+            entity.Property(e => e.FileSystemItemId);
+            entity.Property(e => e.Path);
+            entity.Property(e => e.LastScanTimestamp);
+        });
+
         OnModelCreatingPartial(modelBuilder);
     }
 

@@ -62,7 +62,7 @@ namespace Api
 
             builder.Services.AddScoped<ImageResizeService>();
 
-            builder.Services.AddHostedService<ScheduledScanService>();
+            //builder.Services.AddHostedService<ScheduledScanService>();
 
             WebApplication app = builder.Build();
 

@@ -1,5 +1,9 @@
-﻿namespace Api.Database;
+﻿using Microsoft.EntityFrameworkCore;
 
+namespace Api.Database;
+
+// Just alternative to [Key] attribute
+[PrimaryKey(nameof(Id))]
 public class FileSystemItem
 {
     public long Id
