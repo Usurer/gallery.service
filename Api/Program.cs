@@ -38,6 +38,7 @@ namespace Api
             builder.Services.Configure<FileSystemOptions>(fileSystemConfigSection);
             builder.Services.AddScoped<IFileSystemService, FileSystemService>();
             builder.Services.AddScoped<IStorageService, DatabaseStorageService>();
+            builder.Services.AddScoped<IScansStateService, ScansStateService>();
 
             builder.Services.AddCors(options =>
             {
@@ -63,6 +64,8 @@ namespace Api
             builder.Services.AddScoped<ImageResizeService>();
 
             //builder.Services.AddHostedService<ScheduledScanService>();
+
+            builder.Services.AddSingleton<IScansProcessingService, ScansProcessingService>();
 
             WebApplication app = builder.Build();
 

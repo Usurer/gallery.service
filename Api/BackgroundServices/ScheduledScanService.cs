@@ -15,7 +15,7 @@ namespace Api.BackgroundServices
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            timer = new Timer(GetItems, null, 0, 5 * 1000);
+            timer = new Timer(GetItemsAsync, null, 10 * 1000, 5 * 1000);
             return;
         }
 
@@ -26,7 +26,7 @@ namespace Api.BackgroundServices
             return Task.CompletedTask;
         }
 
-        private void GetItems(object? state)
+        private async void GetItemsAsync(object? state)
         {
             if (IsRunning)
                 return;
@@ -34,7 +34,12 @@ namespace Api.BackgroundServices
             IsRunning = true;
             using var scope = Services.CreateScope();
             var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
-            var items = storageService.GetFolderItems(null, 0, 1);
+            var scanService = scope.ServiceProvider.GetRequiredService<IScansStateService>();
+            var fileSystemService = scope.ServiceProvider.GetRequiredService<IFileSystemService>();
+
+            var item = await scanService.GetNext();
+            await fileSystemService.ScanFoldersFromRootAsync(item.Path).ToArrayAsync();
+
             IsRunning = false;
         }
 
