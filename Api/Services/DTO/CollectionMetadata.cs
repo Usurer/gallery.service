@@ -2,7 +2,7 @@
 {
     public class CollectionMetadata
     {
-        public long RootId
+        public long? RootId
         {
             get; set;
         }

@@ -64,7 +64,9 @@ namespace Api.Controllers
             return Results.Bytes(result.Data, contentType: result.MimeType);
         }
 
-        [HttpGet("{folderId}")]
+        [HttpGet]
+        [Route("{folderId}")]
+        [Route("")]
         public IEnumerable<FileItemInfo> ListItems(long? folderId, int skip = 0, int take = 10, [FromQuery] string[]? extensions = null)
         {
             return _storageService.GetFileItems(folderId, skip, take, extensions);

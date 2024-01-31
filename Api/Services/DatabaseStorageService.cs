@@ -50,14 +50,15 @@ namespace Api.Services
         {
             IQueryable<FileSystemItem> items;
 
-            if (!folderId.HasValue)
+            items = DbContext
+                .FileSystemItems;
+
+            if (folderId.HasValue)
             {
-                folderId = GetDefaultRoot(folderId);
+                items = items.Where(x => x.ParentId == folderId);
             }
 
-            items = DbContext
-                .FileSystemItems
-                .Where(x => x.ParentId == folderId)
+            items = items
                 .Where(x => !x.IsFolder)
                 .OrderBy(x => x.CreationDate)
                 .Skip(skip)
@@ -96,11 +97,6 @@ namespace Api.Services
         public IEnumerable<FolderItemInfo> GetFolderItems(long? folderId, int skip, int take)
         {
             IQueryable<FileSystemItem> items;
-
-            if (!folderId.HasValue)
-            {
-                folderId = GetDefaultRoot(folderId);
-            }
 
             items = DbContext.FileSystemItems;
 
@@ -173,14 +169,9 @@ namespace Api.Services
 
         public CollectionMetadata GetCollectionMetadata(long? rootId)
         {
-            if (!rootId.HasValue)
-            {
-                rootId = GetDefaultRoot(rootId);
-            }
-
             var result = new CollectionMetadata()
             {
-                RootId = rootId.Value,
+                RootId = rootId,
                 ItemsPerMonth = new Dictionary<DateTime, int>()
             };
 
@@ -192,9 +183,13 @@ namespace Api.Services
             command.CommandText = $"" +
                 $"SELECT count(id) as num, dateTime(CreationDate, 'unixepoch', 'start of day') as d " +
                 $"FROM FileSystemItems " +
-                $"WHERE isFolder = 0 " +
-                $"AND parentId = {rootId} " +
-                $"Group By d";
+                $"WHERE isFolder = 0 ";
+
+            if (rootId.HasValue)
+            {
+                command.CommandText += $"AND parentId = {rootId} ";
+            }
+            command.CommandText += $"GROUP BY d";
 
             using var reader = command.ExecuteReader();
             if (reader.HasRows)
@@ -248,18 +243,6 @@ namespace Api.Services
             };
 
             return info;
-        }
-
-        /// <exception cref="ArgumentException"></exception>
-        private long GetDefaultRoot(long? rootId)
-        {
-            // Mind that we can't use StringComparison.Ordinal here and rely on Db collation
-            rootId = DbContext.FileSystemItems
-                .Where(x => string.Equals(x.Path, FileSystemOptions.DefaultFolder))
-                .SingleOrDefault()
-                ?.Id
-            ?? throw new ArgumentException($"There is no record for the defaul folder");
-            return rootId.Value;
         }
     }
 }

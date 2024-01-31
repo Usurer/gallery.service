@@ -15,13 +15,17 @@ namespace Api.Controllers
             _storageService = storageService;
         }
 
-        [HttpGet("{parentId}")]
+        [HttpGet]
+        [Route("{parentId}")]
+        [Route("")]
         public IEnumerable<FolderItemInfo> ListItems(long? parentId, int skip = 0, int take = 10)
         {
             return _storageService.GetFolderItems(parentId, skip, take);
         }
 
         [HttpGet]
+        [Route("{folderId}")]
+        [Route("")]
         public IEnumerable<FolderItemInfo> GetAncestors(long folderId)
         {
             return _storageService.GetFolderAncestors(folderId);
