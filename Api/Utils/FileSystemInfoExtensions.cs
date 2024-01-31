@@ -30,6 +30,7 @@ namespace Api.Utils
                 IsFolder = fileSystemInfo.IsDirectory(),
                 Extension = fileSystemInfo.Extension,
                 CreationDate = DateTimeUtils.ToUnixTimestamp(creationDate),
+                UpdatedAtDate = DateTimeUtils.ToUnixTimestamp(DateTime.Now),
                 ParentId = parentid,
                 Width = width,
                 Height = height,

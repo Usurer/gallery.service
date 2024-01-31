@@ -42,7 +42,7 @@ namespace Api.Controllers
         [ResponseCache(Duration = 3600 * 24)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-        public async Task<IResult> GetImagePreview(long id, int? width, int? height)
+        public async Task<IResult> GetImagePreview(long id, int timestamp, int? width, int? height)
         {
             if (width == null && height == null)
             {
@@ -55,7 +55,7 @@ namespace Api.Controllers
                 );
             }
 
-            var result = await _resizeService.GetAsync(id, width, height);
+            var result = await _resizeService.GetAsync(id, timestamp, width, height);
             if (result == null)
             {
                 return Results.NoContent();

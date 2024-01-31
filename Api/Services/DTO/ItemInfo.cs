@@ -21,5 +21,10 @@
         {
             get;
         }
+
+        public long UpdatedAtDate
+        {
+            get; init;
+        }
     }
 }

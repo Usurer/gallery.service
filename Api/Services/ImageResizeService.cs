@@ -15,9 +15,10 @@ namespace Api.Services
             _easyCachingProvider = easyCachingProviderFactory.GetCachingProvider("disk");
         }
 
-        public async Task<ImageResizeResult?> GetAsync(long id, int? width, int? height)
+        // TODO: Can we include UpdatedAtDate into a cache key? Would be really nice for handling updated items
+        public async Task<ImageResizeResult?> GetAsync(long id, int timestamp, int? width, int? height)
         {
-            var key = $"{id}_{width}_{height}";
+            var key = $"{id}_{timestamp}_{width}_{height}";
             var cacheResult = _easyCachingProvider.Get<ImageResizeResult>(key);
             if (!cacheResult.HasValue)
             {

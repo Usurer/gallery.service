@@ -32,6 +32,7 @@ namespace Api.Services
                     Id = item.Id,
                     Name = item.Name,
                     CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
+                    UpdatedAtDate = item.UpdatedAtDate,
                 };
             }
 
@@ -40,6 +41,7 @@ namespace Api.Services
                 Id = item.Id,
                 Name = item.Name,
                 CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
+                UpdatedAtDate = item.UpdatedAtDate,
                 Width = item.Width.Value,
                 Height = item.Height.Value,
                 Extension = item.Extension,
@@ -60,7 +62,8 @@ namespace Api.Services
 
             items = items
                 .Where(x => !x.IsFolder)
-                .OrderBy(x => x.CreationDate)
+                .OrderBy(x => x.ParentId)
+                .ThenBy(x => x.CreationDate)
                 .Skip(skip)
                 .Take(take);
 
@@ -85,6 +88,7 @@ namespace Api.Services
                     Id = item.Id,
                     Name = item.Name,
                     CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
+                    UpdatedAtDate = item.UpdatedAtDate,
                     Width = item.Width.Value,
                     Height = item.Height.Value,
                     Extension = item.Extension,
@@ -123,6 +127,7 @@ namespace Api.Services
                     Id = item.Id,
                     Name = item.Name,
                     CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
+                    UpdatedAtDate = item.UpdatedAtDate,
                 });
             }
 
@@ -163,6 +168,7 @@ namespace Api.Services
                     Id = x.Id,
                     Name = x.Name,
                     CreationDate = DateTimeUtils.FromUnixTimestamp(x.CreationDate),
+                    UpdatedAtDate = x.UpdatedAtDate,
                 };
             });
         }
@@ -235,6 +241,7 @@ namespace Api.Services
                     Id = fileItem.Id,
                     Name = fileItem.Name,
                     CreationDate = new DateTime(fileItem.CreationDate),
+                    UpdatedAtDate = fileItem.UpdatedAtDate,
                     Extension = fileItem.Extension,
                     Width = fileItem.Width.Value,
                     Height = fileItem.Height.Value,

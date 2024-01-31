@@ -52,4 +52,9 @@ public class FileSystemItem
     {
         get; set;
     }
+
+    public long UpdatedAtDate
+    {
+        get; set;
+    }
 }
