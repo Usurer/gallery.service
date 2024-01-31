@@ -3,6 +3,7 @@ using Api.Database;
 using Api.Utils;
 using Imageflow.Bindings;
 using Imageflow.Fluent;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Api.Services
@@ -82,7 +83,7 @@ namespace Api.Services
                 if (rootDbRecord == null)
                 {
                     rootDbRecord = rootDirectoryInfo.ToFileSystemItem(null, null, null);
-                    DbContext.Add(rootDbRecord);
+                    DbContext.FileSystemItems.Add(rootDbRecord);
                     await DbContext.SaveChangesAsync();
                 }
 
@@ -96,11 +97,11 @@ namespace Api.Services
                     {
                         var fileSystemInfo = batch[i];
                         var isDirectory = fileSystemInfo.IsDirectory();
-                        await Task.Delay(TimeSpan.FromSeconds(1));
 
-                        var existsInDb = DbContext
+                        var dbItem = await DbContext
                             .FileSystemItems
-                            .Any(x => x.Path == fileSystemInfo.FullName);
+                            .FirstOrDefaultAsync(x => x.Path == fileSystemInfo.FullName);
+                        var existsInDb = dbItem != null;
 
                         // TODO: Even if existsInDb we can update missing ParentId if it's possible. Not sure about it
                         if (!existsInDb)
@@ -130,6 +131,14 @@ namespace Api.Services
 
                             // Yeah, these are not saved yet, just added to the Context, but okay
                             result.Saved++;
+                        }
+                        else
+                        {
+                            if (dbItem.ParentId == null)
+                            {
+                                dbItem.ParentId = rootDbRecord.Id;
+                                DbContext.FileSystemItems.Update(dbItem);
+                            }
                         }
                         result.Total++;
                     }
