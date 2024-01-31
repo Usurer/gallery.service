@@ -1,28 +1,7 @@
 ﻿namespace Api.Services.DTO
 {
-    public class FolderItemInfo : IItemInfo
+    public class FolderItemInfo : ItemInfo
     {
-        public required long Id
-        {
-            get;
-            set;
-        }
-
-        public required string Name
-        {
-            get;
-            set;
-        }
-
-        public required DateTime CreationDate
-        {
-            get; set;
-        }
-
-        public bool IsFolder => true;
-
-        public int? Width => null;
-
-        public int? Height => null;
+        public override bool IsFolder => true;
     }
 }

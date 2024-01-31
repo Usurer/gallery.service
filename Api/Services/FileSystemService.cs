@@ -41,7 +41,7 @@ namespace Api.Services
 
             if (!Directory.Exists(root))
             {
-                yield break;
+                throw new ApplicationException($"Path {root} doesn't exist");
             }
 
             var rootDirectoryInfo = new DirectoryInfo(root);
@@ -78,7 +78,7 @@ namespace Api.Services
                 // Use path from the filesystem instead of user-provided value
                 result.Path = rootDirectoryInfo.FullName;
 
-                var rootDbRecord = DbContext.FileSystemItems.Where(x => string.Equals(x.Path, fullPath)).FirstOrDefault();
+                var rootDbRecord = DbContext.FileSystemItems.Where(x => x.Path == fullPath).FirstOrDefault();
                 if (rootDbRecord == null)
                 {
                     rootDbRecord = rootDirectoryInfo.ToFileSystemItem(null, null, null);
@@ -99,9 +99,7 @@ namespace Api.Services
 
                         var existsInDb = DbContext
                             .FileSystemItems
-                            .Any(x =>
-                                string.Equals(x.Path, fileSystemInfo.FullName)
-                            );
+                            .Any(x => x.Path == fileSystemInfo.FullName);
 
                         // TODO: Even if existsInDb we can update missing ParentId if it's possible. Not sure about it
                         if (!existsInDb)

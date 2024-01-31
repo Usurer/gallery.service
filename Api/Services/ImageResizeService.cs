@@ -45,7 +45,18 @@ namespace Api.Services
                 var data = resizedStream.ToArray();
                 var mime = MimeUtils.ExtensionToMime(imageData.Info.Extension);
                 var result = new ImageResizeResult { Data = data, MimeType = mime };
-                _easyCachingProvider.Set<ImageResizeResult>(key, result, TimeSpan.FromDays(1));
+                try
+                {
+                    _easyCachingProvider.Set<ImageResizeResult>(key, result, TimeSpan.FromDays(1));
+                }
+                catch (DirectoryNotFoundException ex)
+                {
+                    // TODO: Log cache failure
+                    // If the cache folder was removed while the app is running, there seems to be
+                    // no way to recreate it and FlushAsync I'm using here doesn't help.
+                    // TODO: Find a way to re-instantiate stuff that was setup on app start
+                    await _easyCachingProvider.FlushAsync();
+                }
 
                 return result;
             }

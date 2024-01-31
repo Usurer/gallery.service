@@ -64,14 +64,10 @@ namespace Api.Controllers
             return Results.Bytes(result.Data, contentType: result.MimeType);
         }
 
-        [HttpGet()]
-        public IEnumerable<IItemInfo> ListItems(long? parentId, int skip = 0, int take = 10, [FromQuery] string[]? extensions = null)
+        [HttpGet("{folderId}")]
+        public IEnumerable<FileItemInfo> ListItems(long? folderId, int skip = 0, int take = 10, [FromQuery] string[]? extensions = null)
         {
-            /* TODO: Instead of IItemInfo[] return two arays: one of files, another of folders
-             * This will allow to get rid of IItemInfo which doesn't have any value
-             * And the whole thing would be better typed, because folders have no dimensions
-             */
-            return _storageService.GetItems(parentId, skip, take, extensions);
+            return _storageService.GetFileItems(folderId, skip, take, extensions);
         }
     }
 }

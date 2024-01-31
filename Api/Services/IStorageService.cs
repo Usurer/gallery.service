@@ -4,9 +4,13 @@ namespace Api.Services
 {
     public interface IStorageService
     {
-        public IItemInfo GetItem(long id);
+        public ItemInfo GetItem(long id);
 
-        public IList<IItemInfo> GetItems(long? rootId, int skip, int take, string[]? extensions);
+        public IEnumerable<FileItemInfo> GetFileItems(long? folderId, int skip, int take, string[]? extensions);
+
+        public IEnumerable<FolderItemInfo> GetFolderItems(long? folderId, int skip, int take);
+
+        public IEnumerable<FolderItemInfo> GetFolderAncestors(long folderId);
 
         public CollectionMetadata GetCollectionMetadata(long? rootId);
 

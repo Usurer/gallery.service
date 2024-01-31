@@ -18,7 +18,7 @@ namespace Api.Services
             FileSystemOptions = fileSystemOptions.Value;
         }
 
-        public IItemInfo GetItem(long id)
+        public ItemInfo GetItem(long id)
         {
             // TODO: Handle exception, return error
             var item = DbContext
@@ -42,26 +42,28 @@ namespace Api.Services
                 CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
                 Width = item.Width.Value,
                 Height = item.Height.Value,
+                Extension = item.Extension,
             };
         }
 
-        public IList<IItemInfo> GetItems(long? rootId, int skip, int take, string[]? extensions)
+        public IEnumerable<FileItemInfo> GetFileItems(long? folderId, int skip, int take, string[]? extensions)
         {
             IQueryable<FileSystemItem> items;
 
-            if (!rootId.HasValue)
+            if (!folderId.HasValue)
             {
-                rootId = GetDefaultRoot(rootId);
+                folderId = GetDefaultRoot(folderId);
             }
 
             items = DbContext
                 .FileSystemItems
-                .Where(x => x.ParentId == rootId)
+                .Where(x => x.ParentId == folderId)
+                .Where(x => !x.IsFolder)
                 .OrderBy(x => x.CreationDate)
                 .Skip(skip)
                 .Take(take);
 
-            var result = new List<IItemInfo>();
+            var result = new List<FileItemInfo>();
             foreach (var item in items)
             {
                 if (extensions != null)
@@ -77,29 +79,96 @@ namespace Api.Services
                     continue;
                 }
 
-                if (item.IsFolder)
+                result.Add(new FileItemInfo
                 {
-                    result.Add(new FolderItemInfo
-                    {
-                        Id = item.Id,
-                        Name = item.Name,
-                        CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
-                    });
-                }
-                else
-                {
-                    result.Add(new FileItemInfo
-                    {
-                        Id = item.Id,
-                        Name = item.Name,
-                        CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
-                        Width = item.Width.Value,
-                        Height = item.Height.Value,
-                    });
-                }
+                    Id = item.Id,
+                    Name = item.Name,
+                    CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
+                    Width = item.Width.Value,
+                    Height = item.Height.Value,
+                    Extension = item.Extension,
+                });
             }
 
             return result;
+        }
+
+        public IEnumerable<FolderItemInfo> GetFolderItems(long? folderId, int skip, int take)
+        {
+            IQueryable<FileSystemItem> items;
+
+            if (!folderId.HasValue)
+            {
+                folderId = GetDefaultRoot(folderId);
+            }
+
+            items = DbContext.FileSystemItems;
+
+            if (!folderId.HasValue)
+            {
+                items = items.Where(x => x.ParentId == null);
+            }
+            else
+            {
+                items = items.Where(x => x.ParentId == folderId);
+            }
+
+            items = items
+                .Where(x => x.IsFolder)
+                .OrderBy(x => x.CreationDate)
+                .Skip(skip)
+                .Take(take);
+
+            var result = new List<FolderItemInfo>();
+            foreach (var item in items)
+            {
+                result.Add(new FolderItemInfo
+                {
+                    Id = item.Id,
+                    Name = item.Name,
+                    CreationDate = DateTimeUtils.FromUnixTimestamp(item.CreationDate),
+                });
+            }
+
+            return result;
+        }
+
+        public IEnumerable<FolderItemInfo> GetFolderAncestors(long folderId)
+        {
+            var ansectors = new List<FileSystemItem>();
+            var currentFolder = DbContext
+                .FileSystemItems
+                .SingleOrDefault(x => x.Id == folderId && x.IsFolder);
+
+            if (currentFolder == null)
+            {
+                // TODO: Log?
+                return Enumerable.Empty<FolderItemInfo>();
+            }
+
+            ansectors.Add(currentFolder);
+
+            var parent = DbContext
+                .FileSystemItems
+                .SingleOrDefault(x => x.Id == currentFolder.ParentId && x.IsFolder);
+
+            while (parent != null)
+            {
+                ansectors.Add(parent);
+                parent = DbContext
+                    .FileSystemItems
+                    .SingleOrDefault(x => x.Id == parent.ParentId && x.IsFolder);
+            }
+
+            return ansectors.Select(x =>
+            {
+                return new FolderItemInfo
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    CreationDate = DateTimeUtils.FromUnixTimestamp(x.CreationDate),
+                };
+            });
         }
 
         public CollectionMetadata GetCollectionMetadata(long? rootId)
@@ -171,7 +240,7 @@ namespace Api.Services
                     Id = fileItem.Id,
                     Name = fileItem.Name,
                     CreationDate = new DateTime(fileItem.CreationDate),
-                    Extension = fileItem.Extension!,
+                    Extension = fileItem.Extension,
                     Width = fileItem.Width.Value,
                     Height = fileItem.Height.Value,
                 },

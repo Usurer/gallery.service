@@ -13,6 +13,11 @@ public class GalleryContext : DbContext
         get; set;
     }
 
+    public virtual DbSet<ScanTarget> ScanTargets
+    {
+        get; set;
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<FileSystemItem>(entity =>
@@ -26,6 +31,14 @@ public class GalleryContext : DbContext
             entity.Property(e => e.Name);
             entity.Property(e => e.CreationDate);
             entity.Property(e => e.Extension);
+        });
+
+        modelBuilder.Entity<ScanTarget>(entity =>
+        {
+            entity.ToTable(nameof(ScanTargets));
+
+            entity.Property(e => e.Id).HasColumnType("INTEGER").IsRequired();
+            entity.Property(e => e.Path);
         });
 
         OnModelCreatingPartial(modelBuilder);
