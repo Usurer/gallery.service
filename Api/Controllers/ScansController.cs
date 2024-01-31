@@ -17,7 +17,7 @@ namespace Api.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> AddScan(string path)
+        public async Task<ActionResult> AddScan([FromBody] string path)
         {
             var id = await ScansStateService.AddFolderToScansAsync(path);
             _ = ScansProcessingService.EnqueueNextScanAsync(id);
