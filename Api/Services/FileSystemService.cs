@@ -96,6 +96,7 @@ namespace Api.Services
                     {
                         var fileSystemInfo = batch[i];
                         var isDirectory = fileSystemInfo.IsDirectory();
+                        await Task.Delay(TimeSpan.FromSeconds(1));
 
                         var existsInDb = DbContext
                             .FileSystemItems

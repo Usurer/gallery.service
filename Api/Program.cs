@@ -1,4 +1,3 @@
-using Api.BackgroundServices;
 using Api.Database;
 using Api.Services;
 using EasyCaching.Disk;
