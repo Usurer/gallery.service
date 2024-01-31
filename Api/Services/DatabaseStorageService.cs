@@ -187,7 +187,7 @@ namespace Api.Services
             using var connection = DbContext.Database.GetDbConnection();
             connection.Open();
 
-            // TODO: Refactor this
+            // TODO: Refactor this, or at least add params properly
             var command = connection.CreateCommand();
             command.CommandText = $"" +
                 $"SELECT count(id) as num, dateTime(CreationDate, 'unixepoch', 'start of day') as d " +
