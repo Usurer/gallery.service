@@ -1,6 +1,8 @@
 ﻿using Api.Services;
 using Api.Services.DTO;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Api.Controllers
 {
@@ -16,17 +18,25 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public CollectionMetadata GetImagesMetadata(long? parentId)
+        public IResult GetImagesMetadata(long? parentId)
         {
             var result = _storageService.GetCollectionMetadata(parentId);
-            return result;
+            return TypedResults.Ok(result);
         }
 
         [HttpGet]
-        public ItemInfo GetItemMetadata(long id)
+        public Results<ProblemHttpResult, Ok<ItemInfo>> GetItemMetadata([BindRequired] long id)
         {
             var result = _storageService.GetItem(id);
-            return result;
+            if (result == null)
+            {
+                return TypedResults.Problem(
+                    title: "Item not found",
+                    detail: "The requested item doesn't exist",
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            }
+            return TypedResults.Ok(result);
         }
     }
 }

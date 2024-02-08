@@ -1,7 +1,9 @@
 ﻿using Api.Services;
 using Api.Services.DTO;
 using Api.Utils;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Api.Controllers
 {
@@ -24,44 +26,50 @@ namespace Api.Controllers
 
         [HttpGet()]
         [ResponseCache(Duration = 60)]
-        public IActionResult GetImage(long id)
+        public Results<NotFound, FileStreamHttpResult> GetImage([BindRequired] long id)
         {
             // imageData is disposable because of the Data stream, but FileStreamResult should take care of it
             var imageData = _storageService.GetImage(id);
 
             if (imageData == null)
             {
-                return new EmptyResult();
+                return TypedResults.NotFound();
             }
 
             var mime = MimeUtils.ExtensionToMime(imageData.Info.Extension);
-            return new FileStreamResult(imageData.Data, mime);
+
+            return TypedResults.File(imageData.Data, mime, imageData.Info.Name);
         }
 
         [HttpGet()]
         [ResponseCache(Duration = 3600 * 24)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-        public async Task<IResult> GetImagePreview(long id, int timestamp, int? width, int? height)
+        public async Task<Results<ProblemHttpResult, FileContentHttpResult>> GetImagePreview(
+            [BindRequired] long id, int timestamp, int? width, int? height
+        )
         {
             if (width == null && height == null)
             {
-                return Results.Json(
-                    new
-                    {
-                        Message = "Either width or height should be provided"
-                    },
-                    statusCode: StatusCodes.Status422UnprocessableEntity
+                return TypedResults.Problem(
+
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: "Missing parameters",
+                    detail: "Either width or height should be provided"
                 );
             }
 
             var result = await _resizeService.GetAsync(id, timestamp, width, height);
             if (result == null)
             {
-                return Results.NoContent();
+                return TypedResults.Problem(
+
+                    statusCode: StatusCodes.Status404NotFound,
+                    title: "Image not found"
+                );
             }
 
-            return Results.Bytes(result.Data, contentType: result.MimeType);
+            return TypedResults.File(result.Data, contentType: result.MimeType);
         }
 
         [HttpGet]
