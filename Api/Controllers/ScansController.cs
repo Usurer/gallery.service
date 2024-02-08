@@ -20,6 +20,8 @@ namespace Api.Controllers
         public async Task<ActionResult> AddScan([FromBody] string path)
         {
             var id = await ScansStateService.AddFolderToScansAsync(path);
+
+            // TODO: Figure out the proper way to do error handling here
             _ = ScansProcessingService.EnqueueNextScanAsync(id);
             return new OkResult();
         }

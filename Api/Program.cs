@@ -2,6 +2,10 @@ using Api.Database;
 using Api.Services;
 using EasyCaching.Disk;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Json;
+using System.Globalization;
 
 namespace Api
 {
@@ -15,6 +19,8 @@ namespace Api
                 Args = args,
             };
             WebApplicationBuilder builder = WebApplication.CreateBuilder(options);
+
+            AddLogging(builder);
 
             // Add services to the container.
             builder.Services.AddControllers();
@@ -94,6 +100,24 @@ namespace Api
             app.MapControllers();
 
             app.Run();
+        }
+
+        private static void AddLogging(WebApplicationBuilder builder)
+        {
+            builder.Logging.ClearProviders();
+            builder.Host.UseSerilog((builderContext, serviceProvider, configuration) =>
+            {
+                configuration
+                    .WriteTo.Console(
+                        restrictedToMinimumLevel: LogEventLevel.Information,
+                        formatProvider: CultureInfo.InvariantCulture)
+                    .WriteTo.File(
+                        restrictedToMinimumLevel: LogEventLevel.Warning,
+                        formatter: new JsonFormatter(),
+                        path: "./logs/log.txt",
+                        rollingInterval: RollingInterval.Day
+                    );
+            });
         }
     }
 }
