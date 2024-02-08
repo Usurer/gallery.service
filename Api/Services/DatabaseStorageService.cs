@@ -1,4 +1,5 @@
 ﻿using Api.Database;
+using Api.Exceptions;
 using Api.Services.DTO;
 using Api.Utils;
 using Microsoft.EntityFrameworkCore;
@@ -12,18 +13,28 @@ namespace Api.Services
 
         private readonly FileSystemOptions FileSystemOptions;
 
-        public DatabaseStorageService(GalleryContext dbContext, IOptions<FileSystemOptions> fileSystemOptions)
+        private readonly ILogger<DatabaseStorageService> Logger;
+
+        public DatabaseStorageService(
+            GalleryContext dbContext,
+            IOptions<FileSystemOptions> fileSystemOptions,
+            ILogger<DatabaseStorageService> logger)
         {
             DbContext = dbContext;
             FileSystemOptions = fileSystemOptions.Value;
+            Logger = logger;
         }
 
         public ItemInfo GetItem(long id)
         {
-            // TODO: Handle exception, return error
             var item = DbContext
                 .FileSystemItems
                 .SingleOrDefault(x => x.Id == id);
+
+            if (item == null)
+            {
+                throw new ItemNotFoundException(id);
+            }
 
             if (item.IsFolder)
             {
@@ -143,8 +154,7 @@ namespace Api.Services
 
             if (currentFolder == null)
             {
-                // TODO: Log?
-                return Enumerable.Empty<FolderItemInfo>();
+                throw new ItemNotFoundException(folderId);
             }
 
             ansectors.Add(currentFolder);

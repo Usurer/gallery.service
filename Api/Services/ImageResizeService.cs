@@ -1,4 +1,5 @@
-﻿using Api.Utils;
+﻿using Api.Exceptions;
+using Api.Utils;
 using EasyCaching.Core;
 using Imageflow.Fluent;
 
@@ -6,28 +7,32 @@ namespace Api.Services
 {
     public class ImageResizeService
     {
-        private readonly IStorageService _storageService;
-        private readonly IEasyCachingProvider _easyCachingProvider;
+        private readonly IStorageService StorageService;
+        private readonly IEasyCachingProvider EasyCachingProvider;
+        private readonly ILogger<ImageResizeService> Logger;
 
-        public ImageResizeService(IStorageService storageService, IEasyCachingProviderFactory easyCachingProviderFactory)
+        public ImageResizeService(
+            IStorageService storageService,
+            IEasyCachingProviderFactory easyCachingProviderFactory,
+            ILogger<ImageResizeService> logger)
         {
-            _storageService = storageService;
-            _easyCachingProvider = easyCachingProviderFactory.GetCachingProvider("disk");
+            StorageService = storageService;
+            EasyCachingProvider = easyCachingProviderFactory.GetCachingProvider("disk");
+            Logger = logger;
         }
 
         // TODO: Can we include UpdatedAtDate into a cache key? Would be really nice for handling updated items
         public async Task<ImageResizeResult?> GetAsync(long id, int timestamp, int? width, int? height)
         {
             var key = $"{id}_{timestamp}_{width}_{height}";
-            var cacheResult = _easyCachingProvider.Get<ImageResizeResult>(key);
+            var cacheResult = EasyCachingProvider.Get<ImageResizeResult>(key);
             if (!cacheResult.HasValue)
             {
-                using var imageData = _storageService.GetImage(id);
+                using var imageData = StorageService.GetImage(id);
 
                 if (imageData == null)
                 {
-                    // TODO: Add logging
-                    return null;
+                    throw new ItemNotFoundException(id);
                 }
 
                 var widthParam = width.HasValue ? $"width={width}" : string.Empty;
@@ -48,15 +53,15 @@ namespace Api.Services
                 var result = new ImageResizeResult { Data = data, MimeType = mime };
                 try
                 {
-                    _easyCachingProvider.Set<ImageResizeResult>(key, result, TimeSpan.FromDays(1));
+                    EasyCachingProvider.Set<ImageResizeResult>(key, result, TimeSpan.FromDays(1));
                 }
                 catch (DirectoryNotFoundException ex)
                 {
-                    // TODO: Log cache failure
+                    Logger.LogError(ex, "Cache failure, directory not found");
                     // If the cache folder was removed while the app is running, there seems to be
                     // no way to recreate it and FlushAsync I'm using here doesn't help.
                     // TODO: Find a way to re-instantiate stuff that was setup on app start
-                    await _easyCachingProvider.FlushAsync();
+                    await EasyCachingProvider.FlushAsync();
                 }
 
                 return result;
