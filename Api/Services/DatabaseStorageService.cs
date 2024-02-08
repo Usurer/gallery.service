@@ -25,7 +25,7 @@ namespace Api.Services
             Logger = logger;
         }
 
-        public ItemInfo GetItem(long id)
+        public ItemInfo? GetItem(long id)
         {
             var item = DbContext
                 .FileSystemItems
@@ -33,7 +33,8 @@ namespace Api.Services
 
             if (item == null)
             {
-                throw new ItemNotFoundException(id);
+                Logger.LogWarning("Item with id {ItemId} was not found", id);
+                return null;
             }
 
             if (item.IsFolder)
@@ -71,6 +72,7 @@ namespace Api.Services
                 items = items.Where(x => x.ParentId == folderId);
             }
 
+            // TODO: Should we check whether the folder itself exist?
             items = items
                 .Where(x => !x.IsFolder)
                 .OrderBy(x => x.ParentId)
@@ -81,7 +83,7 @@ namespace Api.Services
             var result = new List<FileItemInfo>();
             foreach (var item in items)
             {
-                if (extensions != null)
+                if (extensions?.Length > 0)
                 {
                     if (!extensions.Contains(item.Extension, StringComparer.InvariantCultureIgnoreCase))
                     {
@@ -124,6 +126,7 @@ namespace Api.Services
                 items = items.Where(x => x.ParentId == folderId);
             }
 
+            // TODO: Should we query for the folder first and return error if there's no folder with given Id?
             items = items
                 .Where(x => x.IsFolder)
                 .OrderBy(x => x.CreationDate)
@@ -145,7 +148,7 @@ namespace Api.Services
             return result;
         }
 
-        public IEnumerable<FolderItemInfo> GetFolderAncestors(long folderId)
+        public IEnumerable<FolderItemInfo>? GetFolderAncestors(long folderId)
         {
             var ansectors = new List<FileSystemItem>();
             var currentFolder = DbContext
@@ -154,7 +157,8 @@ namespace Api.Services
 
             if (currentFolder == null)
             {
-                throw new ItemNotFoundException(folderId);
+                Logger.LogWarning("Folder with id {FolderId} was not found", folderId);
+                return null;
             }
 
             ansectors.Add(currentFolder);
@@ -227,7 +231,7 @@ namespace Api.Services
             return result;
         }
 
-        public FileItemData GetImage(long id)
+        public FileItemData? GetImage(long id)
         {
             var fileItem = DbContext
                 .FileSystemItems
@@ -235,7 +239,8 @@ namespace Api.Services
 
             if (fileItem == null)
             {
-                throw new ArgumentException("Id not found", nameof(id));
+                Logger.LogWarning("Image with id {ImageId} was not found", id);
+                return null;
             }
 
             /* From time to time I keep getting the System.IO.IOException:

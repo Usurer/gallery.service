@@ -1,4 +1,5 @@
 ﻿using Api.Services;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -17,13 +18,13 @@ namespace Api.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> AddScan([FromBody] string path)
+        public async Task<Ok> AddScan([FromBody] string path)
         {
             var id = await ScansStateService.AddFolderToScansAsync(path);
 
             // TODO: Figure out the proper way to do error handling here
             _ = ScansProcessingService.EnqueueNextScanAsync(id);
-            return new OkResult();
+            return TypedResults.Ok();
         }
     }
 }

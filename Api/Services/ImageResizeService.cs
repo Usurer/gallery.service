@@ -32,7 +32,8 @@ namespace Api.Services
 
                 if (imageData == null)
                 {
-                    throw new ItemNotFoundException(id);
+                    Logger.LogWarning("Image with id {ImageId} was not found", id);
+                    return null;
                 }
 
                 var widthParam = width.HasValue ? $"width={width}" : string.Empty;

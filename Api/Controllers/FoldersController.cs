@@ -1,5 +1,6 @@
 ﻿using Api.Services;
 using Api.Services.DTO;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -25,10 +26,18 @@ namespace Api.Controllers
 
         [HttpGet]
         [Route("{folderId}")]
-        [Route("")]
-        public IEnumerable<FolderItemInfo> GetAncestors(long folderId)
+        public Results<Ok<IEnumerable<FolderItemInfo>>, ProblemHttpResult> GetAncestors(long folderId)
         {
-            return _storageService.GetFolderAncestors(folderId);
+            var result = _storageService.GetFolderAncestors(folderId);
+            if (result == null)
+            {
+                return TypedResults.Problem(
+                    statusCode: StatusCodes.Status404NotFound,
+                    title: "Folder not found"
+                );
+            }
+
+            return TypedResults.Ok(result);
         }
     }
 }
