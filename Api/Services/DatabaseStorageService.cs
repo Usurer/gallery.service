@@ -83,7 +83,7 @@ namespace Api.Services
             var result = new List<FileItemInfo>();
             foreach (var item in items)
             {
-                if (extensions != null)
+                if (extensions?.Length > 0)
                 {
                     if (!extensions.Contains(item.Extension, StringComparer.InvariantCultureIgnoreCase))
                     {
